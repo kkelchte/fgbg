@@ -1,17 +1,14 @@
-import os
-
 import torch
-from torch.nn import TripletMarginLoss
-from torch.utils.data import DataLoader as TorchDataLoader
+from torch.nn import TripletMarginLoss, BCELoss
 import numpy as np
 from tqdm import tqdm
 
-from .model import ResEncoder
 from .utils import get_date_time_tag
-from .data import LineDataset
+from .losses import WeightedBinaryCrossEntropyLoss
 
-
-def train_encoder_with_triplet_loss(encoder, train_dataloader, val_dataloader):
+def train_encoder_with_triplet_loss(
+    encoder, train_dataloader, val_dataloader, checkpoint_file
+):
     triplet_loss = TripletMarginLoss(swap=True)
     for p in encoder.parameters():
         p.requires_grad = True
@@ -37,41 +34,50 @@ def train_encoder_with_triplet_loss(encoder, train_dataloader, val_dataloader):
             loss = triplet_loss(anchor, positive, negative)
             losses["val"].append(loss.cpu().detach().item())
         print(
-            f"{get_date_time_tag()}: epoch {epoch} - "
+            f"{get_date_time_tag()}: encoder epoch {epoch} - "
             f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
             f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
         )
         if lowest_validation_loss > np.mean(losses["val"]):
-            ckpt_file = "checkpoint_augmented_swap_smooth.ckpt"
-            print(f'Saving model in {os.path.join(output_directory, ckpt_file)}')
+            print(f"Saving model in {checkpoint_file}")
             checkpoint = {"encoder": encoder.state_dict()}
             torch.save(
-                checkpoint,
-                os.path.join(output_directory, ckpt_file),
+                checkpoint, checkpoint_file,
             )
             lowest_validation_loss = np.mean(losses["val"])
 
 
-if __name__ == "__main__":
-    print(f"{get_date_time_tag()} - started")
-    output_directory = "/Users/kelchtermans/data/contrastive_learning/line_encoder"
-    os.makedirs(output_directory, exist_ok=True)
-
-    encoder = ResEncoder()
-    # if os.path.isfile(os.path.join(output_directory, "checkpoint.ckpt")):
-    #     encoder.load_state_dict(
-    #         torch.load(os.path.join(output_directory, "checkpoint.ckpt"))["encoder"]()
-    #     )
-    dataset = LineDataset(
-        line_data_hdf5_file="/Users/kelchtermans/data/vanilla_128x128x3_pruned.hdf5",
-        background_images_directory="/Users/kelchtermans/data/textured_dataset",
-    )
-    train_set, val_set = torch.utils.data.random_split(
-        dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
-    )
-
-    train_dataloader = TorchDataLoader(dataset=train_set, batch_size=100, shuffle=True)
-    val_dataloader = TorchDataLoader(dataset=val_set, batch_size=100, shuffle=True)
-
-    train_encoder_with_triplet_loss(encoder, train_dataloader, val_dataloader)
-    print(f"{get_date_time_tag()} - finished")
+def train_decoder_with_frozen_encoder(
+    encoder, decoder, train_dataloader, val_dataloader, checkpoint_file
+):
+    bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
+    encoder.eval()
+    for p in encoder.parameters():
+        p.requires_grad = False
+    lowest_validation_loss = 100
+    optimizer = torch.optim.Adam(decoder.parameters(), lr=0.01, weight_decay=0.0001)
+    for epoch in range(10):
+        losses = {"train": [], "val": []}
+        decoder.train()
+        for batch_idx, data in enumerate(tqdm(train_dataloader)):
+            optimizer.zero_grad()
+            loss = bce_loss(decoder(encoder(data["reference"])), data["target"])
+            loss.backward()
+            optimizer.step()
+            losses["train"].append(loss.cpu().detach().item())
+        decoder.eval()
+        for batch_idx, data in enumerate(tqdm(val_dataloader)):
+            loss = bce_loss(decoder(encoder(data["reference"])), data["target"])
+            losses["val"].append(loss.cpu().detach().item())
+        print(
+            f"{get_date_time_tag()}: decoder epoch {epoch} - "
+            f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
+            f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
+        )
+        if lowest_validation_loss > np.mean(losses["val"]):
+            print(f"Saving model in {checkpoint_file}")
+            checkpoint = {"decoder": decoder.state_dict()}
+            torch.save(
+                checkpoint, checkpoint_file,
+            )
+            lowest_validation_loss = np.mean(losses["val"])
