@@ -11,18 +11,7 @@ from utils import get_date_time_tag
 from data import LineDataset
 
 
-def train_encoder_with_triplet_loss(encoder):
-    dataset = LineDataset(
-        line_data_hdf5_file="/Users/kelchtermans/data/vanilla_128x128x3_pruned.hdf5",
-        background_images_directory="/Users/kelchtermans/data/textured_dataset",
-    )
-    train_set, val_set = torch.utils.data.random_split(
-        dataset, [int(0.9) * len(dataset), int(0.1) * len(dataset)]
-    )
-
-    train_dataloader = TorchDataLoader(dataset=train_set, batch_size=100, shuffle=True)
-    val_dataloader = TorchDataLoader(dataset=val_set, batch_size=100, shuffle=True)
-
+def train_encoder_with_triplet_loss(encoder, train_dataloader, val_dataloader):
     triplet_loss = TripletMarginLoss(swap=True)
     for p in encoder.parameters():
         p.requires_grad = True
@@ -71,5 +60,16 @@ if __name__ == "__main__":
     #     encoder.load_state_dict(
     #         torch.load(os.path.join(output_directory, "checkpoint.ckpt"))["encoder"]()
     #     )
-    train_encoder_with_triplet_loss(encoder=encoder)
+    dataset = LineDataset(
+        line_data_hdf5_file="/Users/kelchtermans/data/vanilla_128x128x3_pruned.hdf5",
+        background_images_directory="/Users/kelchtermans/data/textured_dataset",
+    )
+    train_set, val_set = torch.utils.data.random_split(
+        dataset, [int(0.9) * len(dataset), int(0.1) * len(dataset)]
+    )
+
+    train_dataloader = TorchDataLoader(dataset=train_set, batch_size=100, shuffle=True)
+    val_dataloader = TorchDataLoader(dataset=val_set, batch_size=100, shuffle=True)
+
+    train_encoder_with_triplet_loss(encoder, train_dataloader, val_dataloader)
     print(f"{get_date_time_tag()} - finished")
