@@ -40,6 +40,7 @@ class LineDataset(TorchDataset):
         background_img = load_img(
             np.random.choice(self.background_images), size=image.shape
         )
+        # background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
         foreground_img = np.zeros(image.shape)
         foreground_img[:, :, 0] = np.random.uniform(0, 1)
         foreground_img[:, :, 1] = np.random.uniform(0, 1)
@@ -52,9 +53,8 @@ class LineDataset(TorchDataset):
         new_background_img = load_img(
             np.random.choice(self.background_images), size=image.shape
         )
-        positive = combine(
-            target, foreground_img, new_background_img
-        )
+        # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
+        positive = combine(target, foreground_img, new_background_img)
 
         # get different line with different background for negative sample
         random_other_index = index
@@ -63,12 +63,10 @@ class LineDataset(TorchDataset):
             random_other_index = np.random.randint(0, self._size)
 
         new_image = self.observations[random_other_index]
-        negative = combine(
-            get_binary_mask(new_image), foreground_img, background_img
-        )
+        negative = combine(get_binary_mask(new_image), foreground_img, background_img)
         return {
-            'target': torch.from_numpy(target).permute(2, 0, 1).float(),
-            'reference': torch.from_numpy(reference).permute(2, 0, 1).float(),
-            'positive': torch.from_numpy(positive).permute(2, 0, 1).float(),
-            'negative': torch.from_numpy(negative).permute(2, 0, 1).float()
+            "target": torch.from_numpy(target).permute(2, 0, 1).float(),
+            "reference": torch.from_numpy(reference).permute(2, 0, 1).float(),
+            "positive": torch.from_numpy(positive).permute(2, 0, 1).float(),
+            "negative": torch.from_numpy(negative).permute(2, 0, 1).float(),
         }
