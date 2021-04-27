@@ -30,10 +30,28 @@ def plot(img):
     plt.show()
 
 
-def get_binary_mask(image: np.ndarray) -> np.ndarray:
-    return np.expand_dims(
-        cv2.threshold(image.mean(axis=-1), 0.5, 1, cv2.THRESH_BINARY_INV)[1], axis=-1
-    )
+def plot_data_item(data_item):
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    axes[0].imshow(data_item["reference"].permute(1, 2, 0))
+    axes[0].set_title("reference")
+    axes[0].axis("off")
+    axes[1].imshow(data_item["positive"].permute(1, 2, 0))
+    axes[1].set_title("positive")
+    axes[1].axis("off")
+    axes[2].imshow(data_item["negative"].permute(1, 2, 0))
+    axes[2].set_title("negative")
+    axes[2].axis("off")
+    plt.show()
+
+
+def get_binary_mask(image: np.ndarray, gaussian_blur: bool = False) -> np.ndarray:
+    mask = cv2.threshold(image.mean(axis=-1), 0.5, 1, cv2.THRESH_BINARY_INV)[1]
+    if gaussian_blur:
+        # select random odd kernel size
+        kernel_size = int(np.random.choice([1, 3, 5, 7, 9]))
+        sigma = np.random.uniform(0.1, 3)  # select deviation
+        mask = cv2.GaussianBlur(mask, (kernel_size, kernel_size), sigma)
+    return np.expand_dims(mask, axis=-1)
 
 
 def create_random_gradient_image(

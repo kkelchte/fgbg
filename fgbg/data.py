@@ -6,24 +6,30 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset as TorchDataset
 
-from utils import get_binary_mask, load_img, combine
+from .utils import get_binary_mask, load_img, combine
 
 
 class LineDataset(TorchDataset):
     def __init__(
-        self, line_data_hdf5_file: str, background_images_directory: str,
+        self, line_data_hdf5_file: str, background_images_directory: str = None,
     ):
         self.hdf5_file = h5py.File(line_data_hdf5_file, "r", libver="latest", swmr=True)
         self.observations = self.hdf5_file["dataset"]["observations"]
-        self.background_images = [
-            os.path.join(background_images_directory, sub_directory, image)
-            for sub_directory in os.listdir(background_images_directory)
-            if os.path.isdir(os.path.join(background_images_directory, sub_directory))
-            for image in os.listdir(
-                os.path.join(background_images_directory, sub_directory)
-            )
-            if image.endswith(".jpg")
-        ]
+        self.background_images = (
+            [
+                os.path.join(background_images_directory, sub_directory, image)
+                for sub_directory in os.listdir(background_images_directory)
+                if os.path.isdir(
+                    os.path.join(background_images_directory, sub_directory)
+                )
+                for image in os.listdir(
+                    os.path.join(background_images_directory, sub_directory)
+                )
+                if image.endswith(".jpg")
+            ]
+            if background_images_directory is not None
+            else []
+        )
         self._size = len(self.observations)
 
     def __len__(self) -> int:
@@ -34,13 +40,14 @@ class LineDataset(TorchDataset):
         image = self.observations[index]
 
         # create binary mask as target: 128x128
-        target = get_binary_mask(image)
+        target = get_binary_mask(image, gaussian_blur=True)
 
         # select foreground color and background map
-        background_img = load_img(
-            np.random.choice(self.background_images), size=image.shape
+        background_img = (
+            load_img(np.random.choice(self.background_images), size=image.shape)
+            if len(self.background_images) != 0
+            else np.zeros(image.shape) + np.random.uniform(0, 1)
         )
-        # background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
         foreground_img = np.zeros(image.shape)
         foreground_img[:, :, 0] = np.random.uniform(0, 1)
         foreground_img[:, :, 1] = np.random.uniform(0, 1)
@@ -50,8 +57,10 @@ class LineDataset(TorchDataset):
         reference = combine(target, foreground_img, background_img)
 
         # add different background for positive sample
-        new_background_img = load_img(
-            np.random.choice(self.background_images), size=image.shape
+        new_background_img = (
+            load_img(np.random.choice(self.background_images), size=image.shape)
+            if len(self.background_images) != 0
+            else np.zeros(image.shape) + np.random.uniform(0, 1)
         )
         # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
         positive = combine(target, foreground_img, new_background_img)
@@ -63,7 +72,11 @@ class LineDataset(TorchDataset):
             random_other_index = np.random.randint(0, self._size)
 
         new_image = self.observations[random_other_index]
-        negative = combine(get_binary_mask(new_image), foreground_img, background_img)
+        negative = combine(
+            get_binary_mask(new_image, gaussian_blur=True),
+            foreground_img,
+            background_img,
+        )
         return {
             "target": torch.from_numpy(target).permute(2, 0, 1).float(),
             "reference": torch.from_numpy(reference).permute(2, 0, 1).float(),

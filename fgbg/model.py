@@ -1,9 +1,7 @@
-from typing import Tuple
-
+from typing import Tuple, OrderedDict
 
 import torch
 from torch import nn
-from typing import OrderedDict
 
 
 class ResEncoder(nn.Module):

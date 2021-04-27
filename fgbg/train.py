@@ -4,11 +4,11 @@ import torch
 from torch.nn import TripletMarginLoss
 from torch.utils.data import DataLoader as TorchDataLoader
 import numpy as np
-import tqdm
+from tqdm import tqdm
 
-from model import ResEncoder
-from utils import get_date_time_tag
-from data import LineDataset
+from .model import ResEncoder
+from .utils import get_date_time_tag
+from .data import LineDataset
 
 
 def train_encoder_with_triplet_loss(encoder, train_dataloader, val_dataloader):
@@ -42,10 +42,12 @@ def train_encoder_with_triplet_loss(encoder, train_dataloader, val_dataloader):
             f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
         )
         if lowest_validation_loss > np.mean(losses["val"]):
+            ckpt_file = "checkpoint_augmented_swap_smooth.ckpt"
+            print(f'Saving model in {os.path.join(output_directory, ckpt_file)}')
             checkpoint = {"encoder": encoder.state_dict()}
             torch.save(
                 checkpoint,
-                os.path.join(output_directory, "checkpoint_augmented_swap.ckpt"),
+                os.path.join(output_directory, ckpt_file),
             )
             lowest_validation_loss = np.mean(losses["val"])
 
@@ -65,7 +67,7 @@ if __name__ == "__main__":
         background_images_directory="/Users/kelchtermans/data/textured_dataset",
     )
     train_set, val_set = torch.utils.data.random_split(
-        dataset, [int(0.9) * len(dataset), int(0.1) * len(dataset)]
+        dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
     )
 
     train_dataloader = TorchDataLoader(dataset=train_set, batch_size=100, shuffle=True)
