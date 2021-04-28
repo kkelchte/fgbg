@@ -6,6 +6,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def generate_random_square():
+    color = (1, 1, 1)
+    img = np.zeros((128, 128, 1), np.uint8)
+    square_size = 10 + np.random.randint(int(128 / 8))
+    square_location = (
+        np.random.randint(128 - square_size),
+        np.random.randint(128 - square_size),
+    )
+    cv2.rectangle(
+        img,
+        square_location,
+        (square_location[0] + square_size, square_location[1] + square_size),
+        color,
+        -1,
+    )
+    return img
+
+
+def normalize(d: np.ndarray):
+    d_min = np.amin(d)
+    d_max = np.amax(d)
+    return (d - d_min) / (d_max)
+
+
 def load_img(img_path: str, size: tuple = (128, 128, 3)) -> np.ndarray:
     data = Image.open(img_path, mode="r")
     data = cv2.resize(

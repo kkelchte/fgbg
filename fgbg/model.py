@@ -5,28 +5,43 @@ from torch import nn
 
 
 class ResEncoder(nn.Module):
-    def __init__(self):
+    def __init__(
+        self, feature_size: int = 256, projected_size: int = 5, input_channels: int = 1
+    ):
         super().__init__()
-        self.layers = nn.Sequential(
+        self.encoding_layers = nn.Sequential(
             OrderedDict(
                 [
-                    ("conv1", nn.Conv2d(3, 8, 3, stride=2)),
+                    ("conv1", nn.Conv2d(input_channels, 8, 3, stride=2)),
                     ("bn_1", torch.nn.BatchNorm2d(8)),
                     ("relu1", nn.ReLU()),
                     ("res2", ResidualBlock(8, 16, padding=(1, 1), strides=(2, 1))),
                     ("res3", ResidualBlock(16, 32, padding=(1, 1), strides=(2, 1))),
                     ("res4", ResidualBlock(32, 64, padding=(1, 1), strides=(2, 1))),
                     ("res5", ResidualBlock(64, 128, padding=(1, 1), strides=(2, 1))),
-                    ("res6", ResidualBlock(128, 256, padding=(1, 1), strides=(2, 1))),
+                    (
+                        "res6",
+                        ResidualBlock(
+                            128, feature_size, padding=(1, 1), strides=(2, 1)
+                        ),
+                    ),
                     ("pool", nn.MaxPool2d(2)),
                 ]
             )
         )
-        self.fc = nn.Linear(256, 15)
+        self.projection = nn.Sequential(
+            OrderedDict(
+                [
+                    # ("fc1", nn.Linear(feature_size, feature_size)),
+                    # ("relu2", nn.ReLU()),
+                    ("fc", nn.Linear(feature_size, projected_size)),
+                ]
+            )
+        )
 
-    def forward(self, input: torch.Tensor):
-        high_dim_feature = self.layers(input).squeeze(-1).squeeze(-1)
-        return self.fc(high_dim_feature)
+    def forward(self, inputs: torch.Tensor):
+        high_dim_feature = self.encoding_layers(inputs).squeeze(-1).squeeze(-1)
+        return self.projection(high_dim_feature)
 
 
 class ResidualBlock(torch.nn.Module):
@@ -100,12 +115,12 @@ class ResidualBlock(torch.nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size: int = 5):
         super().__init__()
         self.layers = nn.Sequential(
             OrderedDict(
                 [
-                    ("deconv1", nn.ConvTranspose2d(15, 128, 3, stride=2)),
+                    ("deconv1", nn.ConvTranspose2d(input_size, 128, 3, stride=2)),
                     ("relu1", nn.ReLU()),
                     ("deconv2", nn.ConvTranspose2d(128, 64, 3, stride=2)),
                     ("relu2", nn.ReLU()),
@@ -126,11 +141,22 @@ class Decoder(nn.Module):
 
 
 class AutoEncoder(nn.Module):
-    def __init__(self):
+    def __init__(
+        self,
+        feature_size: int = 256,
+        projected_size: int = 5,
+        input_channels: int = 1,
+        decode_from_projection: bool = True,
+    ):
         super().__init__()
-        self.encoder = ResEncoder()
-        self.decoder = Decoder()
+        self.encoder = ResEncoder(feature_size, projected_size, input_channels)
+        self.decoder = Decoder(
+            projected_size if decode_from_projection else feature_size
+        )
+        self.decode_from_projection = decode_from_projection
+        if not self.decode_from_projection:
+            raise NotImplementedError
 
     def forward(self, input):
-        feature = self.encoder(input)
-        return self.decoder(feature)
+        projection = self.encoder(input)
+        return self.decoder(projection)

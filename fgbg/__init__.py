@@ -1,4 +1,4 @@
-from .data import LineDataset  # noqa
-from .model import ResEncoder, Decoder  # noqa
+from .data import *  # noqa
+from .model import *  # noqa
 from .utils import *  # noqa
 from .train import *  # noqa

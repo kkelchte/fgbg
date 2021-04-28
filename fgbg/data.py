@@ -1,12 +1,153 @@
 import os
 from typing import Dict
+import copy
 
+import cv2
 import h5py
 import numpy as np
 import torch
 from torch.utils.data import Dataset as TorchDataset
 
-from .utils import get_binary_mask, load_img, combine
+from .utils import get_binary_mask, load_img, combine, generate_random_square
+
+
+class SquareCircleDataset(TorchDataset):
+    def __len__(self) -> int:
+        return 1000
+
+    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+        target_img = generate_random_square()
+        # copy target image with square to create input image
+        reference_img = copy.deepcopy(target_img)
+        # Add random circle
+        height, width = 128, 128
+        color = (1, 1, 1)
+        circle_radius = 5 + np.random.randint(int(width / 8))
+        circle_location = (
+            circle_radius + np.random.randint(width - 2 * circle_radius),
+            circle_radius + np.random.randint(height - 2 * circle_radius),
+        )
+        cv2.circle(reference_img, circle_location, circle_radius, color, -1)
+        # negative image with same circle
+        negative_img = generate_random_square()
+        cv2.circle(negative_img, circle_location, circle_radius, color, -1)
+        # positive image with new circle
+        positive_img = copy.deepcopy(target_img)
+        circle_radius = 5 + np.random.randint(int(width / 8))
+        circle_location = (
+            circle_radius + np.random.randint(width - 2 * circle_radius),
+            circle_radius + np.random.randint(height - 2 * circle_radius),
+        )
+        cv2.circle(positive_img, circle_location, circle_radius, color, -1)
+        result = {
+            "reference": torch.from_numpy(reference_img).permute(2, 0, 1).float(),
+            "positive": torch.from_numpy(positive_img).permute(2, 0, 1).float(),
+            "negative": torch.from_numpy(negative_img).permute(2, 0, 1).float(),
+            "target": torch.from_numpy(target_img).permute(2, 0, 1).float(),
+        }
+        return result
+
+
+class SquareDoubleCircleDataset(TorchDataset):
+    def __len__(self) -> int:
+        return 1000
+
+    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+        target_img = generate_random_square()
+        # copy target image with square to create input image
+        reference_img = copy.deepcopy(target_img)
+        # Add two random circles
+        height, width = 128, 128
+        color = (1, 1, 1)
+        circle_radius = 5 + np.random.randint(int(width / 8))
+        circle_location = (
+            circle_radius + np.random.randint(width - 2 * circle_radius),
+            circle_radius + np.random.randint(height - 2 * circle_radius),
+        )
+        cv2.circle(reference_img, circle_location, circle_radius, color, -1)
+        circle_radius_two = 5 + np.random.randint(int(width / 8))
+        circle_location_two = (
+            circle_radius_two + np.random.randint(width - 2 * circle_radius_two),
+            circle_radius_two + np.random.randint(height - 2 * circle_radius_two),
+        )
+        cv2.circle(reference_img, circle_location_two, circle_radius_two, color, -1)
+        # negative image with same circle
+        negative_img = generate_random_square()
+        cv2.circle(negative_img, circle_location, circle_radius, color, -1)
+        cv2.circle(negative_img, circle_location_two, circle_radius_two, color, -1)
+        # positive image with new circle
+        positive_img = copy.deepcopy(target_img)
+        circle_radius = 5 + np.random.randint(int(width / 8))
+        circle_location = (
+            circle_radius + np.random.randint(width - 2 * circle_radius),
+            circle_radius + np.random.randint(height - 2 * circle_radius),
+        )
+        cv2.circle(positive_img, circle_location, circle_radius, color, -1)
+        circle_radius_two = 5 + np.random.randint(int(width / 8))
+        circle_location_two = (
+            circle_radius_two + np.random.randint(width - 2 * circle_radius_two),
+            circle_radius_two + np.random.randint(height - 2 * circle_radius_two),
+        )
+        cv2.circle(positive_img, circle_location_two, circle_radius_two, color, -1)
+        result = {
+            "reference": torch.from_numpy(reference_img).permute(2, 0, 1).float(),
+            "positive": torch.from_numpy(positive_img).permute(2, 0, 1).float(),
+            "negative": torch.from_numpy(negative_img).permute(2, 0, 1).float(),
+            "target": torch.from_numpy(target_img).permute(2, 0, 1).float(),
+        }
+        return result
+
+
+class SquareTriangleDataset(TorchDataset):
+    def __len__(self) -> int:
+        return 1000
+
+    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+        width, height = 128, 128
+        target_img = generate_random_square()
+        # copy target image with square to create input image
+        reference_img = copy.deepcopy(target_img)
+
+        # add triangle
+        square_location = (
+            np.random.randint(width - 50),
+            np.random.randint(height - 50),
+        )
+        contour = [
+            (
+                square_location[0] + np.random.randint(-10, 10),
+                square_location[0] + np.random.randint(-10, 10),
+            )
+            for _ in range(3)
+        ]
+        cv2.drawContours(reference_img, [np.asarray(contour)], 0, (1, 1, 1), -1)
+
+        # negative image with same traingle
+        negative_img = generate_random_square()
+        cv2.drawContours(negative_img, [np.asarray(contour)], 0, (1, 1, 1), -1)
+
+        # positive image with new triangle
+        positive_img = copy.deepcopy(target_img)
+        square_location = (
+            np.random.randint(width - 50),
+            np.random.randint(height - 50),
+        )
+        contour = [
+            (
+                square_location[0] + np.random.randint(-10, 10),
+                square_location[0] + np.random.randint(-10, 10),
+            )
+            for _ in range(3)
+        ]
+        cv2.drawContours(positive_img, [np.asarray(contour)], 0, (1, 1, 1), -1)
+
+        result = {
+            "reference": torch.from_numpy(reference_img).permute(2, 0, 1).float(),
+            "positive": torch.from_numpy(positive_img).permute(2, 0, 1).float(),
+            "negative": torch.from_numpy(negative_img).permute(2, 0, 1).float(),
+            "target": torch.from_numpy(target_img).permute(2, 0, 1).float(),
+        }
+        return result
 
 
 class LineDataset(TorchDataset):

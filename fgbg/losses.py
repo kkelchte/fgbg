@@ -4,7 +4,7 @@ from torch.nn.modules.loss import NLLLoss
 class WeightedBinaryCrossEntropyLoss(NLLLoss):
     r"""The WeightedBinaryCrossEntropyLoss loss. It is useful to train a binary output maps.
 
-    If provided, the optional argument :attr:`weight` will balance the 1's 
+    If provided, the optional argument :attr:`weight` will balance the 1's
     with respect to the 0's:
     The weight is recommended to be the ratio of 0's in an image.
     Often 90% of the target binary maps is 0 while only 10% is 1.
@@ -12,7 +12,7 @@ class WeightedBinaryCrossEntropyLoss(NLLLoss):
     and the losses on target-0 pixels with 0.1.
 
     The `input` given through a forward call is expected to contain
-    probabilities for each pixel. `input` has to be a Tensor of size 
+    probabilities for each pixel. `input` has to be a Tensor of size
     :math:`(minibatch, d_1, d_2, ..., d_K)`
     with :math:`K \geq 1` for the `K`-dimensional case (described later).
 
@@ -21,10 +21,10 @@ class WeightedBinaryCrossEntropyLoss(NLLLoss):
 
     .. math::
         \ell(x, y) = L = \{l_1,\dots,l_N\}^\top, \quad
-        l_n = - \beta * \sum_{(j \in Y^+)} log(Pr(x_j = 1)) - 
+        l_n = - \beta * \sum_{(j \in Y^+)} log(Pr(x_j = 1)) -
         (1-\beta) \sum_{(j \in Y^-)} log(Pr(x_j = 0))
 
-    where :math:`x` is the probability input, :math:`y` is the target, 
+    where :math:`x` is the probability input, :math:`y` is the target,
     :math:`\beta` is the balancing weight, and
     :math:`N` is the batch size.
 
@@ -44,23 +44,27 @@ class WeightedBinaryCrossEntropyLoss(NLLLoss):
             class. If given, it has to be a Tensor of size `C`. Otherwise, it is
             treated as if having all ones.
         reduction (string, optional): Specifies the reduction to apply to the output:
-            ``'none'`` | ``'mean'`` | ``'sum'``. ``'none'``: 
+            ``'none'`` | ``'mean'`` | ``'sum'``. ``'none'``:
             no reduction will be applied,
             ``'mean'``: the sum of the output will be divided by the number of
-            elements in the output, ``'sum'``: the output will be summed. 
+            elements in the output, ``'sum'``: the output will be summed.
             Note: :attr:`size_average`
-            and :attr:`reduce` are in the process of being deprecated, and in the meantime,
-            specifying either of those two args will override :attr:`reduction`. Default: ``'mean'``
+            and :attr:`reduce` are in the process of being deprecated,
+            and in the meantime,
+            specifying either of those two args will override :attr:`reduction`.
+            Default: ``'mean'``
 
     Shape:
         - Input: :math:`(N, C)` where `C = number of classes`, or
           :math:`(N, C, d_1, d_2, ..., d_K)` with :math:`K \geq 1`
           in the case of `K`-dimensional loss.
-        - Target: :math:`(N)` where each value is :math:`0 \leq \text{targets}[i] \leq C-1`, or
+        - Target: :math:`(N)` where each value is :math:`0 \leq \text{targets}[i]
+        \leq C-1`, or
           :math:`(N, d_1, d_2, ..., d_K)` with :math:`K \geq 1` in the case of
           K-dimensional loss.
         - Output: scalar.
-          If :attr:`reduction` is ``'none'``, then the same size as the target: :math:`(N)`, or
+          If :attr:`reduction` is ``'none'``, then the same size as the target:
+          :math:`(N)`, or
           :math:`(N, d_1, d_2, ..., d_K)` with :math:`K \geq 1` in the case
           of K-dimensional loss.
     """
