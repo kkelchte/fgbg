@@ -100,9 +100,16 @@ def train_decoder_with_frozen_encoder(
 
 
 def train_autoencoder(
-    autoencoder, train_dataloader, val_dataloader, checkpoint_file, tb_writer
+    autoencoder,
+    train_dataloader,
+    val_dataloader,
+    checkpoint_file,
+    tb_writer,
+    triplet_loss: bool = False,
 ):
     bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
+    if triplet_loss:
+        trplt_loss = TripletMarginLoss(swap=True)
     lowest_validation_loss = 100
     optimizer = torch.optim.Adam(
         autoencoder.parameters(), lr=0.001, weight_decay=0.0001
@@ -113,6 +120,11 @@ def train_autoencoder(
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
             loss = bce_loss(autoencoder(data["reference"]), data["target"])
+            if triplet_loss:
+                anchor = autoencoder.encoder(data["reference"])
+                positive = autoencoder.encoder(data["positive"])
+                negative = autoencoder.encoder(data["negative"])
+                loss += 0.01 * trplt_loss(anchor, positive, negative)
             loss.backward()
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
@@ -121,15 +133,19 @@ def train_autoencoder(
             loss = bce_loss(autoencoder(data["reference"]), data["target"])
             losses["val"].append(loss.cpu().detach().item())
         print(
-            f"{get_date_time_tag()}: decoder epoch {epoch} - "
+            f"{get_date_time_tag()}: autoencder epoch {epoch} - "
             f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
             f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
         )
         tb_writer.add_scalar(
-            "train/bce_loss/autoencoder", np.mean(losses["train"]), global_step=epoch
+            "train/bce_loss/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            np.mean(losses["train"]),
+            global_step=epoch,
         )
         tb_writer.add_scalar(
-            "val/bce_loss/autoencoder", np.mean(losses["val"]), global_step=epoch
+            "val/bce_loss/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            np.mean(losses["val"]),
+            global_step=epoch,
         )
         if lowest_validation_loss > np.mean(losses["val"]):
             print(f"Saving model in {checkpoint_file}")
@@ -139,9 +155,8 @@ def train_autoencoder(
             lowest_validation_loss = np.mean(losses["val"])
 
 
-def evaluate_models(ood_dataset, encoder, decoder, autoencoder, output_file):
-    encoder.eval()
-    decoder.eval()
+def evaluate_models(ood_dataset, autoencoder_trplt, autoencoder, output_file):
+    autoencoder_trplt.eval()
     autoencoder.eval()
     projection_results = {"trplt": [], "ae": []}
     reconstruction_results = {"trplt": [], "ae": []}
@@ -154,7 +169,7 @@ def evaluate_models(ood_dataset, encoder, decoder, autoencoder, output_file):
             stacked_input = torch.stack(
                 [data_item["reference"], data_item["positive"], data_item["negative"]]
             )
-            trplt_projection = encoder(stacked_input)
+            trplt_projection = autoencoder_trplt.encoder(stacked_input)
             ae_projection = autoencoder.encoder(stacked_input)
 
             def avg_neg_vs_pos_distance(projection):
@@ -171,8 +186,9 @@ def evaluate_models(ood_dataset, encoder, decoder, autoencoder, output_file):
             projection_results["ae"].append(avg_neg_vs_pos_distance(ae_projection))
 
             # get reconstructions and add quantitative results
-            projection = encoder(data_item["reference"].unsqueeze(0))
-            reconstruction_triplet = decoder(projection)
+            reconstruction_triplet = autoencoder_trplt(
+                data_item["reference"].unsqueeze(0)
+            )
             reconstruction_ae = autoencoder(data_item["reference"].unsqueeze(0))
             reconstruction_loss = torch.nn.L1Loss()
             reconstruction_results["trplt"].append(
