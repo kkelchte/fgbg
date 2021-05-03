@@ -9,7 +9,7 @@ import fgbg
 if __name__ == "__main__":
     print(f"{fgbg.get_date_time_tag()} - started")
     output_directory = (
-        "/Users/kelchtermans/data/contrastive_learning/toy_example_wwo_triplet"
+        "/Users/kelchtermans/data/contrastive_learning/toy_example_wwo_triplet_01"
     )
     os.makedirs(output_directory, exist_ok=True)
     tb_writer = SummaryWriter(log_dir=output_directory)

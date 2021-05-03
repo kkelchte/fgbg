@@ -124,7 +124,7 @@ def train_autoencoder(
                 anchor = autoencoder.encoder(data["reference"])
                 positive = autoencoder.encoder(data["positive"])
                 negative = autoencoder.encoder(data["negative"])
-                loss += 0.01 * trplt_loss(anchor, positive, negative)
+                loss += 0.1 * trplt_loss(anchor, positive, negative)
             loss.backward()
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
