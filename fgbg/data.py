@@ -2,13 +2,14 @@ import os
 from typing import Dict
 import copy
 
+import json
 import cv2
 import h5py
 import numpy as np
 import torch
 from torch.utils.data import Dataset as TorchDataset
 
-from .utils import get_binary_mask, load_img, combine, generate_random_square
+from .utils import load_img, combine, generate_random_square
 
 
 class SquareCircleDataset(TorchDataset):
@@ -20,7 +21,7 @@ class SquareCircleDataset(TorchDataset):
         # copy target image with square to create input image
         reference_img = copy.deepcopy(target_img)
         # Add random circle
-        height, width = 128, 128
+        height, width = 200, 200
         color = (1, 1, 1)
         circle_radius = 5 + np.random.randint(int(width / 8))
         circle_location = (
@@ -57,7 +58,7 @@ class SquareDoubleCircleDataset(TorchDataset):
         # copy target image with square to create input image
         reference_img = copy.deepcopy(target_img)
         # Add two random circles
-        height, width = 128, 128
+        height, width = 200, 200
         color = (1, 1, 1)
         circle_radius = 5 + np.random.randint(int(width / 8))
         circle_location = (
@@ -103,7 +104,7 @@ class SquareTriangleDataset(TorchDataset):
         return 1000
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        width, height = 128, 128
+        width, height = 200, 200
         target_img = generate_random_square()
         # copy target image with square to create input image
         reference_img = copy.deepcopy(target_img)
@@ -150,13 +151,57 @@ class SquareTriangleDataset(TorchDataset):
         return result
 
 
-class LineDataset(TorchDataset):
+class CleanDataset(TorchDataset):
     def __init__(
-        self, line_data_hdf5_file: str, background_images_directory: str = None,
+        self, hdf5_file: str, json_file: str,
     ):
-        self.hdf5_file = h5py.File(line_data_hdf5_file, "r", libver="latest", swmr=True)
-        self.observations = self.hdf5_file["dataset"]["observations"]
-        self.background_images = (
+        self.hdf5_file = h5py.File(hdf5_file, "r", libver="latest", swmr=True)
+        with open(json_file, "r") as f:
+            self.json_data = json.load(f)
+
+        self.hash_index_tuples = [
+            (h, index)
+            for h in list(self.json_data.keys())
+            for index in range(len(self.json_data[h]["velocities"]))
+        ]
+
+    def __len__(self) -> int:
+        return len(self.hash_index_tuples)
+
+    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+        hsh, sample_index = self.hash_index_tuples[index]
+        observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
+        observation = torch.from_numpy(observation).permute(2, 0, 1).float()
+
+        mask = np.asarray(self.hdf5_file[hsh]["mask"][sample_index])
+        mask = torch.from_numpy(mask).float()
+
+        relative_target_location = self.json_data[hsh]["relative_target_location"][
+            sample_index
+        ]
+        relative_target_location = torch.as_tensor(relative_target_location).float()
+
+        velocities = self.json_data[hsh]["velocities"][sample_index]
+        velocities = torch.as_tensor(velocities).float()
+
+        return {
+            "observation": observation,
+            "mask": mask,
+            "velocities": velocities,
+            "relative_target_location": relative_target_location,
+        }
+
+
+class AugmentedTripletDataset(CleanDataset):
+    def __init__(
+        self,
+        hdf5_file: str,
+        json_file: str,
+        background_images_directory: str,
+        blur: bool = False,
+    ):
+        super().__init__(hdf5_file, json_file)
+        self._background_images = (
             [
                 os.path.join(background_images_directory, sub_directory, image)
                 for sub_directory in os.listdir(background_images_directory)
@@ -171,56 +216,54 @@ class LineDataset(TorchDataset):
             if background_images_directory is not None
             else []
         )
-        self._size = len(self.observations)
-
-    def __len__(self) -> int:
-        return self._size
+        self._blur = blur
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        # 128x128x3
-        image = self.observations[index]
+        hsh, sample_index = self.hash_index_tuples[index]
+        result = super().__getitem__(index)
 
-        # create binary mask as target: 128x128
-        target = get_binary_mask(image, gaussian_blur=True)
+        observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
 
         # select foreground color and background map
-        background_img = (
-            load_img(np.random.choice(self.background_images), size=image.shape)
-            if len(self.background_images) != 0
-            else np.zeros(image.shape) + np.random.uniform(0, 1)
+        background_img = load_img(
+            np.random.choice(self._background_images), size=observation.shape
         )
-        foreground_img = np.zeros(image.shape)
+        foreground_img = np.zeros(observation.shape)
         foreground_img[:, :, 0] = np.random.uniform(0, 1)
         foreground_img[:, :, 1] = np.random.uniform(0, 1)
         foreground_img[:, :, 2] = np.random.uniform(0, 1)
 
         # combine both as reference image
-        reference = combine(target, foreground_img, background_img)
+        result["reference"] = combine(
+            result["mask"].numpy(), foreground_img, background_img, blur=self._blur
+        )
 
         # add different background for positive sample
-        new_background_img = (
-            load_img(np.random.choice(self.background_images), size=image.shape)
-            if len(self.background_images) != 0
-            else np.zeros(image.shape) + np.random.uniform(0, 1)
+        new_background_img = load_img(
+            np.random.choice(self._background_images), size=observation.shape
         )
         # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
-        positive = combine(target, foreground_img, new_background_img)
+        result["positive"] = combine(
+            result["mask"].numpy(), foreground_img, new_background_img, blur=self._blur
+        )
 
         # get different line with different background for negative sample
         random_other_index = index
         # make sure new index is at least 5 frames away
         while abs(random_other_index - index) < 5:
-            random_other_index = np.random.randint(0, self._size)
+            random_other_index = np.random.randint(0, len(self))
 
-        new_image = self.observations[random_other_index]
-        negative = combine(
-            get_binary_mask(new_image, gaussian_blur=True),
+        second_hsh, second_sample_index = self.hash_index_tuples[random_other_index]
+        second_observation = np.asarray(
+            self.hdf5_file[second_hsh]["observation"][second_sample_index]
+        )
+        second_observation = (
+            torch.from_numpy(second_observation).permute(2, 0, 1).float()
+        )
+        result["negative"] = combine(
+            np.asarray(self.hdf5_file[second_hsh]["mask"][second_sample_index]),
             foreground_img,
             background_img,
+            blur=self._blur,
         )
-        return {
-            "target": torch.from_numpy(target).permute(2, 0, 1).float(),
-            "reference": torch.from_numpy(reference).permute(2, 0, 1).float(),
-            "positive": torch.from_numpy(positive).permute(2, 0, 1).float(),
-            "negative": torch.from_numpy(negative).permute(2, 0, 1).float(),
-        }
+        return result

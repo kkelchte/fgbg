@@ -42,8 +42,14 @@ def load_img(img_path: str, size: tuple = (128, 128, 3)) -> np.ndarray:
 
 
 def combine(
-    mask: np.ndarray, foreground: np.ndarray, background: np.ndarray
+    mask: np.ndarray, foreground: np.ndarray, background: np.ndarray, blur: bool = False
 ) -> np.ndarray:
+    if blur:
+        # select random odd kernel size
+        kernel_size = int(np.random.choice([1, 3, 5, 7, 9]))
+        sigma = np.random.uniform(0.1, 3)  # select deviation
+        mask = cv2.GaussianBlur(mask, (kernel_size, kernel_size), sigma)
+    mask = np.stack([mask] * foreground.shape[2], axis=-1)
     combination = mask * foreground + (1 - mask) * background
     return combination
 
