@@ -19,10 +19,11 @@ class ResEncoder(nn.Module):
                     ("res3", ResidualBlock(16, 32, padding=(1, 1), strides=(2, 1))),
                     ("res4", ResidualBlock(32, 64, padding=(1, 1), strides=(2, 1))),
                     ("res5", ResidualBlock(64, 128, padding=(1, 1), strides=(2, 1))),
+                    ("res6", ResidualBlock(128, 256, padding=(1, 1), strides=(2, 1)),),
                     (
-                        "res6",
+                        "res7",
                         ResidualBlock(
-                            128, feature_size, padding=(1, 1), strides=(2, 1)
+                            256, feature_size, padding=(1, 1), strides=(2, 1)
                         ),
                     ),
                     ("pool", nn.MaxPool2d(2)),
@@ -120,7 +121,9 @@ class Decoder(nn.Module):
         self.layers = nn.Sequential(
             OrderedDict(
                 [
-                    ("deconv1", nn.ConvTranspose2d(input_size, 128, 3, stride=2)),
+                    ("deconv0", nn.ConvTranspose2d(input_size, 256, 3, stride=2)),
+                    ("relu0", nn.ReLU()),
+                    ("deconv1", nn.ConvTranspose2d(256, 128, 3, stride=2)),
                     ("relu1", nn.ReLU()),
                     ("deconv2", nn.ConvTranspose2d(128, 64, 3, stride=2)),
                     ("relu2", nn.ReLU()),
@@ -130,7 +133,8 @@ class Decoder(nn.Module):
                     ("relu4", nn.ReLU()),
                     ("deconv5", nn.ConvTranspose2d(16, 8, 3, stride=2)),
                     ("relu5", nn.ReLU()),
-                    ("deconv6", nn.ConvTranspose2d(8, 1, 4, stride=2)),
+                    ("deconv6", nn.ConvTranspose2d(8, 1, 3, stride=2)),
+                    ("relu6", nn.ReLU()),
                 ]
             )
         )

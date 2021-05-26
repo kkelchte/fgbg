@@ -29,7 +29,7 @@ def train_autoencoder(
         autoencoder.train()
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
-            loss = bce_loss(autoencoder(data["reference"]), data["target"])
+            loss = bce_loss(autoencoder(data["reference"]), data["mask"])
             if triplet_loss:
                 anchor = autoencoder.encoder(data["reference"])
                 positive = autoencoder.encoder(data["positive"])
@@ -40,7 +40,7 @@ def train_autoencoder(
             losses["train"].append(loss.cpu().detach().item())
         autoencoder.eval()
         for batch_idx, data in enumerate(tqdm(val_dataloader)):
-            loss = bce_loss(autoencoder(data["reference"]), data["target"])
+            loss = bce_loss(autoencoder(data["reference"]), data["mask"])
             losses["val"].append(loss.cpu().detach().item())
         print(
             f"{get_date_time_tag()}: autoencder epoch {epoch} - "

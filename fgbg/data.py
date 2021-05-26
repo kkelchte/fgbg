@@ -186,6 +186,7 @@ class CleanDataset(TorchDataset):
 
         return {
             "observation": observation,
+            "reference": observation,
             "mask": mask,
             "velocities": velocities,
             "relative_target_location": relative_target_location,

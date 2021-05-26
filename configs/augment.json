@@ -4,5 +4,6 @@
     "training_directory": "data/gate_cone_line/cone",
     "test_directory": "data/gate_cone_line_realistic/cone",
     "texture_directory": "data/textured_dataset",
-    "blur": 0
+    "blur": 0,
+    "triplet": 1
 }

@@ -12,6 +12,7 @@ import fgbg
 parser = ArgumentParser()
 parser.add_argument("--config_file")
 parser.add_argument("--learning_rate", type=float)
+parser.add_argument("--output_dir", type=str)
 config = vars(parser.parse_args())
 if config["config_file"] is not None:
     with open(config["config_file"], "r") as f:
@@ -25,7 +26,7 @@ pprint(config)
 if __name__ == "__main__":
     output_directory = (
         f'data/{config["config_file"][:-5]}'
-        if config["output_dir"] is None
+        if "output_dir" not in config.keys()
         else config["output_dir"]
     )
     os.makedirs(output_directory, exist_ok=True)
@@ -52,7 +53,10 @@ if __name__ == "__main__":
 
     print(f"{fgbg.get_date_time_tag()} - Train autoencoder")
     model = fgbg.AutoEncoder(
-        feature_size=256, projected_size=128, decode_from_projection=False
+        feature_size=1024,
+        projected_size=128,
+        input_channels=3,
+        decode_from_projection=True,
     )
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if os.path.isfile(checkpoint_file):
@@ -64,6 +68,6 @@ if __name__ == "__main__":
             val_dataloader,
             checkpoint_file,
             tb_writer,
-            triplet_loss=bool(config['triplet']),
+            triplet_loss=bool(config["triplet"]),
         )
     print("finished")
