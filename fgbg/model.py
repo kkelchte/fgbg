@@ -133,7 +133,7 @@ class Decoder(nn.Module):
                     ("relu4", nn.ReLU()),
                     ("deconv5", nn.ConvTranspose2d(16, 8, 3, stride=2)),
                     ("relu5", nn.ReLU()),
-                    ("deconv6", nn.ConvTranspose2d(8, 1, 3, stride=2)),
+                    ("deconv6", nn.ConvTranspose2d(8, 1, 3, stride=1)),
                     ("relu6", nn.ReLU()),
                 ]
             )
