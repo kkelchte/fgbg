@@ -53,8 +53,8 @@ if __name__ == "__main__":
 
     print(f"{fgbg.get_date_time_tag()} - Train autoencoder")
     model = fgbg.AutoEncoder(
-        feature_size=1024,
-        projected_size=128,
+        feature_size=512,
+        projected_size=512,
         input_channels=3,
         decode_from_projection=True,
     )

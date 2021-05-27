@@ -21,7 +21,7 @@ class SquareCircleDataset(TorchDataset):
         # copy target image with square to create input image
         reference_img = copy.deepcopy(target_img)
         # Add random circle
-        height, width = 200, 200
+        height, width = 128, 128
         color = (1, 1, 1)
         circle_radius = 5 + np.random.randint(int(width / 8))
         circle_location = (
@@ -58,7 +58,7 @@ class SquareDoubleCircleDataset(TorchDataset):
         # copy target image with square to create input image
         reference_img = copy.deepcopy(target_img)
         # Add two random circles
-        height, width = 200, 200
+        height, width = 128, 128
         color = (1, 1, 1)
         circle_radius = 5 + np.random.randint(int(width / 8))
         circle_location = (
@@ -104,7 +104,7 @@ class SquareTriangleDataset(TorchDataset):
         return 1000
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        width, height = 200, 200
+        width, height = 128, 128
         target_img = generate_random_square()
         # copy target image with square to create input image
         reference_img = copy.deepcopy(target_img)
@@ -171,9 +171,15 @@ class CleanDataset(TorchDataset):
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
         hsh, sample_index = self.hash_index_tuples[index]
         observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
+        observation = cv2.resize(
+            np.asarray(observation), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
+        )
         observation = torch.from_numpy(observation).permute(2, 0, 1).float()
 
         mask = np.asarray(self.hdf5_file[hsh]["mask"][sample_index])
+        mask = cv2.resize(
+            np.asarray(mask), dsize=(128, 128), interpolation=cv2.INTER_NEAREST
+        )
         mask = torch.from_numpy(mask).float()
 
         relative_target_location = self.json_data[hsh]["relative_target_location"][
@@ -224,6 +230,9 @@ class AugmentedTripletDataset(CleanDataset):
         result = super().__getitem__(index)
 
         observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
+        observation = cv2.resize(
+            np.asarray(observation), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
+        )
 
         # select foreground color and background map
         background_img = load_img(
