@@ -55,9 +55,9 @@ if __name__ == "__main__":
 
     print(f"{fgbg.get_date_time_tag()} - Evaluate three models")
     output_file = os.path.join(output_directory, "original")
-    fgbg.evaluate_models(dataset, autoencoder_trplt, autoencoder, output_file)
+    fgbg.compare_models(dataset, autoencoder_trplt, autoencoder, output_file)
     ood_dataset = fgbg.SquareDoubleCircleDataset()
     output_file = os.path.join(output_directory, "ood")
-    fgbg.evaluate_models(ood_dataset, autoencoder_trplt, autoencoder, output_file)
+    fgbg.compare_models(ood_dataset, autoencoder_trplt, autoencoder, output_file)
 
     print(f"{fgbg.get_date_time_tag()} - finished")

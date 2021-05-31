@@ -70,4 +70,10 @@ if __name__ == "__main__":
             tb_writer,
             triplet_loss=bool(config["triplet"]),
         )
-    print("finished")
+    print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")
+    fgbg.evaluate_models(
+        ood_dataset,
+        
+    )
+
+    print(f"{fgbg.get_date_time_tag()} - Finished")
