@@ -32,7 +32,7 @@ def train_autoencoder(
         autoencoder.load_state_dict(ckpt["state_dict"])
         autoencoder.global_step = ckpt["global_step"]
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
-        lowest_validation_loss = ckpt["lowest_validation_loss"]
+        lowest_validation_loss = ckpt["lowest_val_loss"]
 
     while autoencoder.global_step < num_epochs:
         losses = {"train": [], "val": []}
@@ -71,8 +71,8 @@ def train_autoencoder(
             np.mean(losses["val"]),
             global_step=autoencoder.global_step,
         )
+        autoencoder.global_step += 1
         if lowest_validation_loss > np.mean(losses["val"]):
-            print(f"Saving model in {checkpoint_file}")
             lowest_validation_loss = np.mean(losses["val"])
             ckpt = {
                 "state_dict": autoencoder.state_dict(),
@@ -83,7 +83,7 @@ def train_autoencoder(
             torch.save(
                 ckpt, checkpoint_file,
             )
-        autoencoder.global_step += 1
+            print(f"Saved model in {checkpoint_file}.")
     autoencoder.to(torch.device("cpu"))
 
 
