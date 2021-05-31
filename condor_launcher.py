@@ -5,25 +5,32 @@ import subprocess
 import shlex
 
 
-INTERPRETER_PATH = "/PATH/TO/INTERPRETER"
-PROJECT_PATH = "/PATH/TO/PROJECT"
+INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
+PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
+OUTPUT_PATH = "/esat/opal/kkelchte/experimental_data/contrastive_learning"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(machineowner == "Visics") && (CUDAGlobalMemoryMb >= 1900)',
+    "Requirements": '(machineowner == "Visics") && (CUDAGlobalMemoryMb >= 3900) && (Has_avx == True)',
+    "initial_dir": PROJECT_PATH,
     "priority": 1,
-    "RequestCpus": 4,
+    "RequestCpus": 6,
     "Request_GPUs": 1,
-    "RequestMemory": "4000 G",
+    "RequestMemory": "7000 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
-    "+RequestWalltime": 60 * 60,
+    "+RequestWalltime": 60 * 60 * 2,
 }
 
-TARGETS = ["cone", "gate", "line"]
-CONFIGS = glob(f"{PROJECT_PATH}/configs/*.json")
-LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
-SUBMIT = False
+#TARGETS = ["cone", "gate", "line"]
+#CONFIGS = [f"configs/{cf}.json" for cf in ["baseline", "augment", "augment_blur", "augment_blur_triplet"]]
+#LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
+
+TARGETS = ["cone"]
+CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
+LEARNING_RATES = [0.01]
+
+SUBMIT = True
 RM_EXIST = False
 
 print("TARGETS: ", TARGETS)
@@ -34,7 +41,7 @@ print("LEARNING_RATES: ", LEARNING_RATES)
 def create_condor_job_file(trgt, config, lrate):
     config_tag = os.path.basename(config[:-5])
     output_dir = (
-        f"/esat/opal/kkelchte/experimental_data/fgbg/{trgt}/{config_tag}/{lrate}"
+        f"{OUTPUT_PATH}/{trgt}/{config_tag}/{lrate}"
     )
     if RM_EXIST and os.path.isdir(output_dir):
         shutil.rmtree(output_dir)

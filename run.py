@@ -50,8 +50,8 @@ if __name__ == "__main__":
     train_set, val_set = torch.utils.data.random_split(
         dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
     )
-    train_dataloader = TorchDataLoader(dataset=train_set, batch_size=100, shuffle=True)
-    val_dataloader = TorchDataLoader(dataset=val_set, batch_size=100, shuffle=True)
+    train_dataloader = TorchDataLoader(dataset=train_set, batch_size=100, shuffle=True, num_workers=4 if torch.cuda.is_available() else 0)
+    val_dataloader = TorchDataLoader(dataset=val_set, batch_size=100, shuffle=True, num_workers=4 if torch.cuda.is_available() else 0)
 
     print(f"{fgbg.get_date_time_tag()} - Train autoencoder")
     model = fgbg.AutoEncoder(

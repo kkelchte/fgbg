@@ -31,7 +31,7 @@ def train_autoencoder(
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
             loss = bce_loss(
-                autoencoder(data["reference"]).to(device), data["mask"].to(device)
+                autoencoder(data["reference"].to(device)), data["mask"].to(device)
             )
             if triplet_loss:
                 anchor = autoencoder.encoder(data["reference"].to(device))
@@ -44,7 +44,7 @@ def train_autoencoder(
         autoencoder.eval()
         for batch_idx, data in enumerate(tqdm(val_dataloader)):
             loss = bce_loss(
-                autoencoder(data["reference"]).to(device), data["mask"].to(device)
+                autoencoder(data["reference"].to(device)), data["mask"].to(device)
             )
             losses["val"].append(loss.cpu().detach().item())
         print(
