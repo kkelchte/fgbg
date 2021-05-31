@@ -149,6 +149,7 @@ class AutoEncoder(nn.Module):
         decode_from_projection: bool = True,
     ):
         super().__init__()
+        self.global_step = 0
         self.encoder = ResEncoder(feature_size, projected_size, input_channels)
         self.decoder = Decoder(
             projected_size if decode_from_projection else feature_size

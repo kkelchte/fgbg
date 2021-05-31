@@ -15,6 +15,7 @@ def train_autoencoder(
     tb_writer,
     triplet_loss: bool = False,
     num_epochs: int = 40,
+    epoch: int = 0
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
@@ -25,7 +26,7 @@ def train_autoencoder(
     optimizer = torch.optim.Adam(
         autoencoder.parameters(), lr=0.001, weight_decay=0.0001
     )
-    for epoch in range(num_epochs):
+    while epoch < autoencoder.global_step:
         losses = {"train": [], "val": []}
         autoencoder.train()
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
@@ -42,7 +43,7 @@ def train_autoencoder(
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
         autoencoder.eval()
-        for batch_idx, data in enumerate(tqdm(val_dataloader)):
+        for batch_idx, data in enumerate(val_dataloader):
             loss = bce_loss(
                 autoencoder(data["reference"].to(device)), data["mask"].to(device)
             )
@@ -68,6 +69,7 @@ def train_autoencoder(
                 autoencoder.state_dict(), checkpoint_file,
             )
             lowest_validation_loss = np.mean(losses["val"])
+        autoencoder.global_step += 1
     autoencoder.to(torch.device("cpu"))
 
 

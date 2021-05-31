@@ -63,21 +63,21 @@ if __name__ == "__main__":
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if os.path.isfile(checkpoint_file):
         model.load_state_dict(torch.load(checkpoint_file))
-    else:
-        fgbg.train_autoencoder(
-            model,
-            train_dataloader,
-            val_dataloader,
-            checkpoint_file,
-            tb_writer,
-            triplet_loss=bool(config["triplet"]),
-            num_epochs=config["number_of_epochs"],
-        )
-        # set weights to best validation checkpoint
-        model.load_state_dict(
-            torch.load(checkpoint_file, map_location=torch.device("cpu"))
-        )
-        model.eval()
+    
+    fgbg.train_autoencoder(
+        model,
+        train_dataloader,
+        val_dataloader,
+        checkpoint_file,
+        tb_writer,
+        triplet_loss=bool(config["triplet"]),
+        num_epochs=config["number_of_epochs"],
+    )
+    # set weights to best validation checkpoint
+    model.load_state_dict(
+        torch.load(checkpoint_file, map_location=torch.device("cpu"))
+    )
+    model.eval()
 
     print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")
     ood_dataset = fgbg.CleanDataset(

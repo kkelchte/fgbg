@@ -11,14 +11,14 @@ OUTPUT_PATH = "/esat/opal/kkelchte/experimental_data/contrastive_learning"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(machineowner == "Visics") && (CUDAGlobalMemoryMb >= 3900) && (Has_avx == True)',
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900)',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 6,
     "Request_GPUs": 1,
-    "RequestMemory": "7000 G",
+    "RequestMemory": "5 G",
     "RequestDisk": "50 G",
-    "Niceuser": "True",
+    "Niceuser": "False",
     "+RequestWalltime": 60 * 60 * 2,
 }
 
@@ -31,7 +31,7 @@ CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
 LEARNING_RATES = [0.01]
 
 SUBMIT = True
-RM_EXIST = False
+RM_EXIST = True
 
 print("TARGETS: ", TARGETS)
 print("CONFIGS: ", CONFIGS)
@@ -47,9 +47,9 @@ def create_condor_job_file(trgt, config, lrate):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir)
     with open(os.path.join(output_dir, "condor.job"), "w") as jobfile:
-        jobfile.write(f"executable     = {INTERPRETER_PATH} {PROJECT_PATH}/run.py \n")
+        jobfile.write(f"executable     = {INTERPRETER_PATH} \n")
         jobfile.write(
-            f"arguments     = --config_file {PROJECT_PATH}/{config} "
+            f"arguments     = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir}\n"
         )
