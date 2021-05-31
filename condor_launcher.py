@@ -18,17 +18,17 @@ SPECS = {
     "Request_GPUs": 1,
     "RequestMemory": "5 G",
     "RequestDisk": "50 G",
-    "Niceuser": "False",
+    "Niceuser": "True",
     "+RequestWalltime": 60 * 60 * 2,
 }
 
-#TARGETS = ["cone", "gate", "line"]
-#CONFIGS = [f"configs/{cf}.json" for cf in ["baseline", "augment", "augment_blur", "augment_blur_triplet"]]
-#LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
+TARGETS = ["cone", "gate", "line"]
+CONFIGS = [f"configs/{cf}.json" for cf in ["baseline", "augment", "augment_blur", "augment_blur_triplet"]]
+LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
-TARGETS = ["cone"]
-CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
-LEARNING_RATES = [0.01]
+# TARGETS = ["cone"]
+# CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
+# LEARNING_RATES = [0.01]
 
 SUBMIT = True
 RM_EXIST = True
