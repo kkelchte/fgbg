@@ -1,3 +1,5 @@
+import os
+
 import torch
 from torch.nn import TripletMarginLoss
 import numpy as np
@@ -15,7 +17,6 @@ def train_autoencoder(
     tb_writer,
     triplet_loss: bool = False,
     num_epochs: int = 40,
-    epoch: int = 0
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
@@ -26,7 +27,14 @@ def train_autoencoder(
     optimizer = torch.optim.Adam(
         autoencoder.parameters(), lr=0.001, weight_decay=0.0001
     )
-    while epoch < autoencoder.global_step:
+    if os.path.isfile(checkpoint_file):
+        ckpt = torch.load(checkpoint_file, map_location=device)
+        autoencoder.load_state_dict(ckpt["state_dict"])
+        autoencoder.global_step = ckpt["global_step"]
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+        lowest_validation_loss = ckpt["lowest_validation_loss"]
+
+    while autoencoder.global_step < num_epochs:
         losses = {"train": [], "val": []}
         autoencoder.train()
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
@@ -49,26 +57,32 @@ def train_autoencoder(
             )
             losses["val"].append(loss.cpu().detach().item())
         print(
-            f"{get_date_time_tag()}: autoencder epoch {epoch} - "
+            f"{get_date_time_tag()}: epoch {autoencoder.global_step} - "
             f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
             f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
         )
         tb_writer.add_scalar(
             "train/bce_loss/autoencoder" + ("" if not triplet_loss else "_trplt"),
             np.mean(losses["train"]),
-            global_step=epoch,
+            global_step=autoencoder.global_step,
         )
         tb_writer.add_scalar(
             "val/bce_loss/autoencoder" + ("" if not triplet_loss else "_trplt"),
             np.mean(losses["val"]),
-            global_step=epoch,
+            global_step=autoencoder.global_step,
         )
         if lowest_validation_loss > np.mean(losses["val"]):
             print(f"Saving model in {checkpoint_file}")
-            torch.save(
-                autoencoder.state_dict(), checkpoint_file,
-            )
             lowest_validation_loss = np.mean(losses["val"])
+            ckpt = {
+                "state_dict": autoencoder.state_dict(),
+                "global_step": autoencoder.global_step,
+                "optimizer_state_dict": optimizer.state_dict(),
+                "lowest_val_loss": lowest_validation_loss,
+            }
+            torch.save(
+                ckpt, checkpoint_file,
+            )
         autoencoder.global_step += 1
     autoencoder.to(torch.device("cpu"))
 

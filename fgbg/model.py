@@ -161,3 +161,10 @@ class AutoEncoder(nn.Module):
     def forward(self, input):
         projection = self.encoder(input)
         return self.decoder(projection)
+
+    def load_ckpt(self, ckpt_file):
+        ckpt = torch.load(ckpt_file, map_location=torch.device("cpu"))
+        self.load_state_dict(
+            ckpt["state_dict"]
+        )
+        self.global_step = ckpt["global_step"]

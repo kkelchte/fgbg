@@ -50,8 +50,18 @@ if __name__ == "__main__":
     train_set, val_set = torch.utils.data.random_split(
         dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
     )
-    train_dataloader = TorchDataLoader(dataset=train_set, batch_size=100, shuffle=True, num_workers=4 if torch.cuda.is_available() else 0)
-    val_dataloader = TorchDataLoader(dataset=val_set, batch_size=100, shuffle=True, num_workers=4 if torch.cuda.is_available() else 0)
+    train_dataloader = TorchDataLoader(
+        dataset=train_set,
+        batch_size=100,
+        shuffle=True,
+        num_workers=4 if torch.cuda.is_available() else 0,
+    )
+    val_dataloader = TorchDataLoader(
+        dataset=val_set,
+        batch_size=100,
+        shuffle=True,
+        num_workers=4 if torch.cuda.is_available() else 0,
+    )
 
     print(f"{fgbg.get_date_time_tag()} - Train autoencoder")
     model = fgbg.AutoEncoder(
@@ -61,9 +71,7 @@ if __name__ == "__main__":
         decode_from_projection=True,
     )
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
-    if os.path.isfile(checkpoint_file):
-        model.load_state_dict(torch.load(checkpoint_file))
-    
+
     fgbg.train_autoencoder(
         model,
         train_dataloader,
@@ -74,9 +82,9 @@ if __name__ == "__main__":
         num_epochs=config["number_of_epochs"],
     )
     # set weights to best validation checkpoint
-    model.load_state_dict(
-        torch.load(checkpoint_file, map_location=torch.device("cpu"))
-    )
+    ckpt = torch.load(checkpoint_file, map_location=torch.device('cpu'))
+    model.load_state_dict(ckpt["state_dict"])
+    model.global_step = ckpt["global_step"]
     model.eval()
 
     print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")

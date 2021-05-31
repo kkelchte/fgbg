@@ -66,16 +66,22 @@ def evaluate_on_dataset(
         tb_writer.add_scalar(
             dataset.name.replace("/", "_") + "_bce_loss_avg",
             torch.as_tensor(losses).mean(),
+            global_step=model.global_step,
         )
         tb_writer.add_scalar(
             dataset.name.replace("/", "_") + "_bce_loss_std",
             torch.as_tensor(losses).std(),
+            global_step=model.global_step,
         )
         tb_writer.add_scalar(
-            dataset.name.replace("/", "_") + "_iou_avg", torch.as_tensor(ious).mean(),
+            dataset.name.replace("/", "_") + "_iou_avg",
+            torch.as_tensor(ious).mean(),
+            global_step=model.global_step,
         )
         tb_writer.add_scalar(
-            dataset.name.replace("/", "_") + "_iou_std", torch.as_tensor(ious).std(),
+            dataset.name.replace("/", "_") + "_iou_std",
+            torch.as_tensor(ious).std(),
+            global_step=model.global_step,
         )
         with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
             f.write(
