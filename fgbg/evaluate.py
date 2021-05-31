@@ -12,6 +12,20 @@ from .utils import normalize
 from .losses import WeightedBinaryCrossEntropyLoss
 
 
+def get_IoU(predictions, labels):
+    eps = 1e-6
+    outputs = predictions.round().int()
+    labels = labels.int()
+    # from: https://www.kaggle.com/iezepov/fast-iou-scoring-metric-in-pytorch-and-numpy
+    # Will be zero if Truth=0 or Prediction=0
+    intersection = (outputs & labels).float().sum((1, 2))
+    # Will be zero if both are
+    union = (outputs | labels).float().sum((1, 2))
+    # We smooth our devision to avoid 0/0
+    iou = (intersection + eps) / (union + eps)
+    return iou.mean()
+
+
 def evaluate_on_dataset(
     dataset: TorchDataset,
     model: Module,
@@ -19,6 +33,7 @@ def evaluate_on_dataset(
     save_outputs: bool = False,
 ):
     losses = []
+    ious = []
     bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
     if save_outputs:
         save_dir = os.path.join(tb_writer.get_logdir(), "imgs")
@@ -30,6 +45,7 @@ def evaluate_on_dataset(
         if "mask" in data.keys():
             loss = bce_loss(prediction, data["mask"])
             losses.append(loss.detach().cpu())
+            ious.append(get_IoU(prediction, data["mask"]).detach().cpu())
         if save_outputs and _ == randomly_selected_indices_to_save:
             mask = prediction.detach().cpu().squeeze().numpy()
             obs = data["observation"].detach().cpu().squeeze().permute(1, 2, 0).numpy()
@@ -55,6 +71,29 @@ def evaluate_on_dataset(
             dataset.name.replace("/", "_") + "_bce_loss_std",
             torch.as_tensor(losses).std(),
         )
+        tb_writer.add_scalar(
+            dataset.name.replace("/", "_") + "_iou_avg", torch.as_tensor(ious).mean(),
+        )
+        tb_writer.add_scalar(
+            dataset.name.replace("/", "_") + "_iou_std", torch.as_tensor(ious).std(),
+        )
+        with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
+            f.write(
+                f"{dataset.name.replace('/', '_')}_bce_loss_avg: "
+                f"{torch.as_tensor(losses).mean()}\n",
+            )
+            f.write(
+                f"{dataset.name.replace('/', '_')}_bce_loss_std: "
+                f"{torch.as_tensor(losses).std()}\n",
+            )
+            f.write(
+                f"{dataset.name.replace('/', '_')}_ious_avg: "
+                f"{torch.as_tensor(ious).mean()}\n",
+            )
+            f.write(
+                f"{dataset.name.replace('/', '_')}_ious_std: "
+                f"{torch.as_tensor(ious).std()}\n",
+            )
 
 
 def compare_models(ood_dataset, autoencoder_trplt, autoencoder, output_file):
