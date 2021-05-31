@@ -14,11 +14,13 @@ def train_autoencoder(
     checkpoint_file,
     tb_writer,
     triplet_loss: bool = False,
-    num_epochs: int = 40
+    num_epochs: int = 40,
 ):
-    bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    autoencoder.to(device)
+    bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
     if triplet_loss:
-        trplt_loss = TripletMarginLoss(swap=True)
+        trplt_loss = TripletMarginLoss(swap=True).to(device)
     lowest_validation_loss = 100
     optimizer = torch.optim.Adam(
         autoencoder.parameters(), lr=0.001, weight_decay=0.0001
@@ -28,18 +30,22 @@ def train_autoencoder(
         autoencoder.train()
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
-            loss = bce_loss(autoencoder(data["reference"]), data["mask"])
+            loss = bce_loss(
+                autoencoder(data["reference"]).to(device), data["mask"].to(device)
+            )
             if triplet_loss:
-                anchor = autoencoder.encoder(data["reference"])
-                positive = autoencoder.encoder(data["positive"])
-                negative = autoencoder.encoder(data["negative"])
+                anchor = autoencoder.encoder(data["reference"].to(device))
+                positive = autoencoder.encoder(data["positive"].to(device))
+                negative = autoencoder.encoder(data["negative"].to(device))
                 loss += 0.1 * trplt_loss(anchor, positive, negative)
             loss.backward()
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
         autoencoder.eval()
         for batch_idx, data in enumerate(tqdm(val_dataloader)):
-            loss = bce_loss(autoencoder(data["reference"]), data["mask"])
+            loss = bce_loss(
+                autoencoder(data["reference"]).to(device), data["mask"].to(device)
+            )
             losses["val"].append(loss.cpu().detach().item())
         print(
             f"{get_date_time_tag()}: autoencder epoch {epoch} - "
@@ -62,6 +68,7 @@ def train_autoencoder(
                 autoencoder.state_dict(), checkpoint_file,
             )
             lowest_validation_loss = np.mean(losses["val"])
+    autoencoder.to(torch.device("cpu"))
 
 
 def train_encoder_with_triplet_loss(

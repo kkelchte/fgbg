@@ -74,7 +74,9 @@ if __name__ == "__main__":
             num_epochs=config["number_of_epochs"],
         )
         # set weights to best validation checkpoint
-        model.load_state_dict(torch.load(checkpoint_file))
+        model.load_state_dict(
+            torch.load(checkpoint_file, map_location=torch.device("cpu"))
+        )
         model.eval()
 
     print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")
