@@ -1,8 +1,9 @@
 {
+    "target": "cone", 
     "learning_rate": 0.01,
     "augment": 0,
-    "training_directory": "data/gate_cone_line/gate",
-    "test_directory": "data/gate_cone_line_realistic/gate",
+    "training_directory": "data/gate_cone_line",
+    "test_directory": "data/gate_cone_line_realistic",
     "texture_directory": "data/textured_dataset",
     "blur": 0,
     "triplet": 0

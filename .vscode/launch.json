@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Huidige bestand",
+            "name": "DEBUG",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "run.py",
             "console": "integratedTerminal",
             "args": [
                 "--config_file",
-                "configs/baseline_cone.json",
+                "configs/debug.json",
             ]
         }
     ]

@@ -14,6 +14,7 @@ def train_autoencoder(
     checkpoint_file,
     tb_writer,
     triplet_loss: bool = False,
+    num_epochs: int = 40
 ):
     bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
     if triplet_loss:
@@ -22,7 +23,7 @@ def train_autoencoder(
     optimizer = torch.optim.Adam(
         autoencoder.parameters(), lr=0.001, weight_decay=0.0001
     )
-    for epoch in range(40):
+    for epoch in range(num_epochs):
         losses = {"train": [], "val": []}
         autoencoder.train()
         for batch_idx, data in enumerate(tqdm(train_dataloader)):

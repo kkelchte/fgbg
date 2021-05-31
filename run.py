@@ -24,8 +24,9 @@ if config["config_file"] is not None:
 pprint(config)
 
 if __name__ == "__main__":
+    target = config["target"]
     output_directory = (
-        f'data/{config["config_file"][:-5]}'
+        f'data/{os.path.basename(config["config_file"][:-5])}/{target}'
         if "output_dir" not in config.keys()
         else config["output_dir"]
     )
@@ -35,13 +36,13 @@ if __name__ == "__main__":
     print(f"{fgbg.get_date_time_tag()} - Generate dataset")
     if not bool(config["augment"]):
         dataset = fgbg.CleanDataset(
-            hdf5_file=config["training_directory"] + "/data.hdf5",
-            json_file=config["training_directory"] + "/data.json",
+            hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
+            json_file=os.path.join(config["training_directory"], target, "data.json"),
         )
     else:
         dataset = fgbg.AugmentedTripletDataset(
-            hdf5_file=config["training_directory"] + "/data.hdf5",
-            json_file=config["training_directory"] + "/data.json",
+            hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
+            json_file=os.path.join(config["training_directory"], target, "data.json"),
             background_images_directory=config["texture_directory"],
             blur=bool(config["blur"]),
         )
@@ -69,11 +70,21 @@ if __name__ == "__main__":
             checkpoint_file,
             tb_writer,
             triplet_loss=bool(config["triplet"]),
+            num_epochs=config["number_of_epochs"],
         )
+        # set weights to best validation checkpoint
+        model.load_state_dict(torch.load(checkpoint_file))
+        model.eval()
+
     print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")
-    fgbg.evaluate_models(
-        ood_dataset,
-        
+    ood_dataset = fgbg.CleanDataset(
+        hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
+        json_file=os.path.join(config["ood_directory"], target, "data.json"),
     )
+    fgbg.evaluate_on_dataset(ood_dataset, model, tb_writer, save_outputs=True)
+
+    print(f"{fgbg.get_date_time_tag()} - Evaluate qualitatively on real images")
+    real_dataset = fgbg.ImagesDataset(target=target, dir_name=config["real_directory"])
+    fgbg.evaluate_on_dataset(real_dataset, model, tb_writer, save_outputs=True)
 
     print(f"{fgbg.get_date_time_tag()} - Finished")

@@ -2,6 +2,7 @@ import os
 from typing import Dict
 import copy
 
+from PIL import Image
 import json
 import cv2
 import h5py
@@ -155,6 +156,11 @@ class CleanDataset(TorchDataset):
     def __init__(
         self, hdf5_file: str, json_file: str,
     ):
+        self.name = (
+            os.path.basename(os.path.dirname(os.path.dirname(hdf5_file)))
+            + "/"
+            + os.path.basename(os.path.dirname(hdf5_file))
+        )
         self.hdf5_file = h5py.File(hdf5_file, "r", libver="latest", swmr=True)
         with open(json_file, "r") as f:
             self.json_data = json.load(f)
@@ -277,3 +283,24 @@ class AugmentedTripletDataset(CleanDataset):
             blur=self._blur,
         )
         return result
+
+
+class ImagesDataset(TorchDataset):
+    def __init__(self, dir_name: str, target: str) -> None:
+        super().__init__()
+        self.name = os.path.basename(dir_name)
+        self.images = [
+            os.path.join(dir_name, f)
+            for f in os.listdir(dir_name)
+            if f.endswith(".png") and target in f
+        ]
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, index):
+        img_file = self.images[index]
+        image = Image.open(img_file)
+        image = np.array(image.resize((128, 128)), dtype=np.float32)
+        image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.
+        return {"observation": image}

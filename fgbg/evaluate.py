@@ -1,9 +1,60 @@
+import os
+
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+from torch.nn import Module
+from torch.utils.tensorboard.writer import SummaryWriter
+from torch.utils.data import Dataset as TorchDataset
 
 from .utils import normalize
+from .losses import WeightedBinaryCrossEntropyLoss
+
+
+def evaluate_on_dataset(
+    dataset: TorchDataset,
+    model: Module,
+    tb_writer: SummaryWriter,
+    save_outputs: bool = False,
+):
+    losses = []
+    bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
+    if save_outputs:
+        save_dir = os.path.join(tb_writer.get_logdir(), "imgs")
+        os.makedirs(save_dir, exist_ok=True)
+    randomly_selected_indices_to_save = np.random.choice(list(range(len(dataset))))
+    for _ in range(len(dataset)):
+        data = dataset[_]
+        prediction = model(data["observation"].unsqueeze(0))
+        if "mask" in data.keys():
+            loss = bce_loss(prediction, data["mask"])
+            losses.append(loss.detach().cpu())
+        if save_outputs and _ == randomly_selected_indices_to_save:
+            mask = prediction.detach().cpu().squeeze().numpy()
+            obs = data["observation"].detach().cpu().squeeze().permute(1, 2, 0).numpy()
+            combined = obs * np.stack([mask + 0.3] * 3, axis=-1)
+            fig, ax = plt.subplots(1, 3, figsize=(9, 3))
+            ax[0].imshow(obs)
+            ax[0].axis("off")
+            ax[1].imshow(mask)
+            ax[1].axis("off")
+            ax[2].imshow(combined)
+            ax[2].axis("off")
+            fig.tight_layout()
+            plt.savefig(
+                os.path.join(save_dir, f'{dataset.name.replace("/", "_")}_{_}.jpg')
+            )
+            tb_writer.add_image(dataset.name, combined, dataformats="HWC")
+    if len(losses) != 0:
+        tb_writer.add_scalar(
+            dataset.name.replace("/", "_") + "_bce_loss_avg",
+            torch.as_tensor(losses).mean(),
+        )
+        tb_writer.add_scalar(
+            dataset.name.replace("/", "_") + "_bce_loss_std",
+            torch.as_tensor(losses).std(),
+        )
 
 
 def compare_models(ood_dataset, autoencoder_trplt, autoencoder, output_file):
