@@ -1,10 +1,12 @@
 {
-    "target": "cone", 
+    "target": "cone",
     "learning_rate": 0.01,
-    "augment": 1,
+    "number_of_epochs": 100,
     "training_directory": "data/gate_cone_line",
-    "test_directory": "data/gate_cone_line_realistic",
+    "ood_directory": "data/gate_cone_line_realistic",
+    "real_directory": "data/bebop_real",
     "texture_directory": "data/textured_dataset",
+    "augment": 1,
     "blur": 0,
-    "triplet": 1
+    "triplet": 0
 }
