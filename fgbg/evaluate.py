@@ -47,7 +47,7 @@ def evaluate_on_dataset(
             plt.savefig(
                 os.path.join(save_dir, f'{dataset.name.replace("/", "_")}_{_}.jpg')
             )
-            tb_writer.add_image(dataset.name, combined, dataformats="HWC")
+            tb_writer.add_image(dataset.name.replace("/", "_"), combined, dataformats="HWC")
     if len(losses) != 0:
         tb_writer.add_scalar(
             dataset.name.replace("/", "_") + "_bce_loss_avg",

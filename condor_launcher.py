@@ -1,4 +1,5 @@
 import os
+import time
 import shutil
 from glob import glob
 import subprocess
@@ -7,7 +8,7 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "/esat/opal/kkelchte/experimental_data/contrastive_learning"
+OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data"
 
 SPECS = {
     "Universe": "vanilla",
@@ -19,7 +20,7 @@ SPECS = {
     "RequestMemory": "5 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
-    "+RequestWalltime": 60 * 60 * 2,
+    "+RequestWalltime": 60 * 60,
 }
 
 TARGETS = ["cone", "gate", "line"]
@@ -65,11 +66,14 @@ def create_condor_job_file(trgt, config, lrate):
     return os.path.join(output_dir, "condor.job")
 
 
-for target in TARGETS:
-    for conf in CONFIGS:
+for conf in CONFIGS:
+    for target in TARGETS:
         for lr in LEARNING_RATES:
             filename = create_condor_job_file(target, conf, lr)
             if SUBMIT:
                 subprocess.call(shlex.split(f"condor_submit {filename}"))
+    # wait 20 minutes
+    if SUBMIT:
+        time.sleep(20 * 60)
 
 print("finished")
