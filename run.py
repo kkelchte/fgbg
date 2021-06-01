@@ -41,23 +41,23 @@ if __name__ == "__main__":
         input_channels=3,
         decode_from_projection=True,
     )
-    if not config["evaluate"]:
-        print(f"{fgbg.get_date_time_tag()} - Generate dataset")
-        if not bool(config["augment"]):
-            dataset = fgbg.CleanDataset(
-                hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
-                json_file=os.path.join(config["training_directory"], target, "data.json"),
-            )
-        else:
-            dataset = fgbg.AugmentedTripletDataset(
-                hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
-                json_file=os.path.join(config["training_directory"], target, "data.json"),
-                background_images_directory=config["texture_directory"],
-                blur=bool(config["blur"]),
-            )
-        train_set, val_set = torch.utils.data.random_split(
-            dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
+    print(f"{fgbg.get_date_time_tag()} - Generate dataset")
+    if not bool(config["augment"]):
+        dataset = fgbg.CleanDataset(
+            hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
+            json_file=os.path.join(config["training_directory"], target, "data.json"),
         )
+    else:
+        dataset = fgbg.AugmentedTripletDataset(
+            hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
+            json_file=os.path.join(config["training_directory"], target, "data.json"),
+            background_images_directory=config["texture_directory"],
+            blur=bool(config["blur"]),
+        )
+    train_set, val_set = torch.utils.data.random_split(
+        dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
+    )
+    if not config["evaluate"]:
         train_dataloader = TorchDataLoader(
             dataset=train_set,
             batch_size=100,
@@ -87,6 +87,9 @@ if __name__ == "__main__":
     model.load_state_dict(ckpt["state_dict"])
     model.global_step = ckpt["global_step"]
     model.eval()
+
+    print(f"{fgbg.get_date_time_tag()} - Evaluate on validation set")
+    fgbg.evaluate_on_dataset(val_set, model, tb_writer, save_outputs=True)
 
     print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")
     ood_dataset = fgbg.CleanDataset(
