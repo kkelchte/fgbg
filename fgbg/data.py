@@ -244,14 +244,10 @@ class AugmentedTripletDataset(CleanDataset):
         background_img = load_img(
             np.random.choice(self._background_images), size=observation.shape
         )
-        foreground_img = np.zeros(observation.shape)
-        foreground_img[:, :, 0] = np.random.uniform(0, 1)
-        foreground_img[:, :, 1] = np.random.uniform(0, 1)
-        foreground_img[:, :, 2] = np.random.uniform(0, 1)
 
         # combine both as reference image
         result["reference"] = combine(
-            result["mask"].numpy(), foreground_img, background_img, blur=self._blur
+            result["mask"].numpy(), observation, background_img, blur=self._blur
         )
 
         # add different background for positive sample
@@ -260,7 +256,7 @@ class AugmentedTripletDataset(CleanDataset):
         )
         # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
         result["positive"] = combine(
-            result["mask"].numpy(), foreground_img, new_background_img, blur=self._blur
+            result["mask"].numpy(), observation, new_background_img, blur=self._blur
         )
 
         # get different line with different background for negative sample
@@ -273,12 +269,16 @@ class AugmentedTripletDataset(CleanDataset):
         second_observation = np.asarray(
             self.hdf5_file[second_hsh]["observation"][second_sample_index]
         )
-        second_observation = (
-            torch.from_numpy(second_observation).permute(2, 0, 1).float()
+        second_observation = cv2.resize(
+            np.asarray(second_observation), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
+        )
+        second_mask = np.asarray(self.hdf5_file[second_hsh]["mask"][second_sample_index])
+        second_mask = cv2.resize(
+            np.asarray(second_mask), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
         )
         result["negative"] = combine(
-            np.asarray(self.hdf5_file[second_hsh]["mask"][second_sample_index]),
-            foreground_img,
+            second_mask,
+            second_observation,
             background_img,
             blur=self._blur,
         )

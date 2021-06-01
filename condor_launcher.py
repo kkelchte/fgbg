@@ -12,7 +12,7 @@ OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(CUDAGlobalMemoryMb >= 3900)',
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 6,
@@ -24,7 +24,8 @@ SPECS = {
 }
 
 TARGETS = ["cone", "gate", "line"]
-CONFIGS = [f"configs/{cf}.json" for cf in ["baseline", "augment", "augment_blur", "augment_blur_triplet"]]
+#CONFIGS = [f"configs/{cf}.json" for cf in ["baseline", "augment", "augment_blur", "augment_blur_triplet"]]
+CONFIGS = [f"configs/{cf}.json" for cf in ["augment"]]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
 # TARGETS = ["cone"]
@@ -42,7 +43,7 @@ print("LEARNING_RATES: ", LEARNING_RATES)
 def create_condor_job_file(trgt, config, lrate):
     config_tag = os.path.basename(config[:-5])
     output_dir = (
-        f"{OUTPUT_PATH}/{trgt}/{config_tag}/{lrate}"
+        f"{OUTPUT_PATH}/{config_tag}/{trgt}/{lrate}"
     )
     if RM_EXIST and os.path.isdir(output_dir):
         shutil.rmtree(output_dir)
@@ -73,7 +74,7 @@ for conf in CONFIGS:
             if SUBMIT:
                 subprocess.call(shlex.split(f"condor_submit {filename}"))
     # wait 20 minutes
-    if SUBMIT:
+    if SUBMIT and len(CONFIGS) != 1:
         time.sleep(20 * 60)
 
 print("finished")

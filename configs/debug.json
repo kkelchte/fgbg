@@ -6,7 +6,7 @@
     "ood_directory": "data/gate_cone_line_realistic",
     "real_directory": "data/bebop_real",
     "texture_directory": "data/textured_dataset",
-    "augment": 0,
+    "augment": 1,
     "blur": 0,
     "triplet": 0
 }

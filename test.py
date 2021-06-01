@@ -16,7 +16,7 @@ def test_model_architecture():
     print(model.decoder(feature).shape)
 
 
-def test_data_loading():
+def test_data_loading_clean():
     dataset = fgbg.CleanDataset(
             hdf5_file="data/gate_cone_line/cone/data.hdf5",
             json_file="data/gate_cone_line/cone/data.json",
@@ -25,5 +25,16 @@ def test_data_loading():
     print(data_item['mask'].min(), data_item['mask'].max())
 
 
+def test_data_loading_augment():
+    dataset = fgbg.AugmentedTripletDataset(
+            hdf5_file="data/gate_cone_line/cone/data.hdf5",
+            json_file="data/gate_cone_line/cone/data.json",
+            background_images_directory="data/textured_dataset"
+        )
+    data_item = dataset[0]
+    for k in data_item.keys():
+        print(k, data_item[k].shape)
+
+
 if __name__ == "__main__":
-    test_data_loading()
+    test_data_loading_augment()

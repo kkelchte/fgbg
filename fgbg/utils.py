@@ -3,17 +3,20 @@ from datetime import datetime
 import cv2
 from PIL import Image
 import numpy as np
+import torch
 import matplotlib.pyplot as plt
 
 
 def get_IoU(predictions, labels):
+    """Code inspired by 
+    https://www.kaggle.com/iezepov/fast-iou-scoring-metric-in-pytorch-and-numpy
+    """
     eps = 1e-6
     # assert N x H x W
     assert len(predictions.shape) == 3
     assert len(labels.shape) == 3
     outputs = predictions.round().int()
     labels = labels.int()
-    # from: https://www.kaggle.com/iezepov/fast-iou-scoring-metric-in-pytorch-and-numpy
     # Will be zero if Truth=0 or Prediction=0
     intersection = (outputs & labels).float().sum((1, 2))
     # Will be zero if both are
@@ -60,7 +63,7 @@ def load_img(img_path: str, size: tuple = (128, 128, 3)) -> np.ndarray:
 
 def combine(
     mask: np.ndarray, foreground: np.ndarray, background: np.ndarray, blur: bool = False
-) -> np.ndarray:
+) -> torch.Tensor:
     if blur:
         # select random odd kernel size
         kernel_size = int(np.random.choice([1, 3, 5, 7, 9]))
@@ -68,6 +71,7 @@ def combine(
         mask = cv2.GaussianBlur(mask, (kernel_size, kernel_size), sigma)
     mask = np.stack([mask] * foreground.shape[2], axis=-1)
     combination = mask * foreground + (1 - mask) * background
+    combination = torch.from_numpy(combination).permute(2, 0, 1).float()
     return combination
 
 

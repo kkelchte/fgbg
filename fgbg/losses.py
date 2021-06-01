@@ -3,6 +3,7 @@ from torch.nn.modules.loss import NLLLoss
 
 class WeightedBinaryCrossEntropyLoss(NLLLoss):
     r"""The WeightedBinaryCrossEntropyLoss loss. It is useful to train a binary output maps.
+    Documentation and implementation based on pytorch BCEWithLogitsLoss.
 
     If provided, the optional argument :attr:`weight` will balance the 1's
     with respect to the 0's:
