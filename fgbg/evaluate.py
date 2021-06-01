@@ -26,11 +26,13 @@ def evaluate_on_dataset(
         os.makedirs(save_dir, exist_ok=True)
     for _ in range(min(len(dataset), 100)):
         data = dataset[_]
-        prediction = model(data["observation"].unsqueeze(0))
+        prediction = model(data["observation"].unsqueeze(0), intermediate_outputs=False)
         if "mask" in data.keys():
             loss = bce_loss(prediction, data["mask"])
             losses.append(loss.detach().cpu())
-            ious.append(get_IoU(prediction.squeeze(0), data["mask"].unsqueeze(0)).detach().cpu())
+            ious.append(
+                get_IoU(prediction.squeeze(0), data["mask"].unsqueeze(0)).detach().cpu()
+            )
         if save_outputs and _ == 0:  # store first image
             mask = prediction.detach().cpu().squeeze().numpy()
             obs = data["observation"].detach().cpu().squeeze().permute(1, 2, 0).numpy()
@@ -46,7 +48,9 @@ def evaluate_on_dataset(
             plt.savefig(
                 os.path.join(save_dir, f'{dataset.name.replace("/", "_")}_{_}.jpg')
             )
-            tb_writer.add_image(dataset.name.replace("/", "_"), combined, dataformats="HWC")
+            tb_writer.add_image(
+                dataset.name.replace("/", "_"), combined, dataformats="HWC"
+            )
     if len(losses) != 0:
         tb_writer.add_scalar(
             dataset.name.replace("/", "_") + "_bce_loss_avg",

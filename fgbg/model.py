@@ -109,13 +109,9 @@ class ResEncoder(nn.Module):
             )
         )
 
-    def forward(self, inputs: torch.Tensor, intermediate_outputs: bool = False):
-        if not intermediate_outputs:
-            high_dim_feature = self.encoding_layers(inputs).squeeze(-1).squeeze(-1)
-            return self.projection(high_dim_feature)
-        else:
-            # provide intermediate projections as tuple with items of NxDx1x1 / or as one projection...
-            raise NotImplementedError
+    def forward(self, inputs: torch.Tensor):
+        high_dim_feature = self.encoding_layers(inputs).squeeze(-1).squeeze(-1)
+        return self.projection(high_dim_feature)
 
 
 class Decoder(nn.Module):
@@ -139,13 +135,9 @@ class Decoder(nn.Module):
             )
         )
 
-    def forward(self, inpt: torch.Tensor, intermediate_outputs: bool = False):
-        if not intermediate_outputs:
-            logits = self.layers(inpt.unsqueeze(-1).unsqueeze(-1))
-            return torch.sigmoid(logits)
-        else:
-            # decode separate inputs and return as tuples of Nx1xHxW
-            raise NotImplementedError
+    def forward(self, inpt: torch.Tensor):
+        logits = self.layers(inpt.unsqueeze(-1).unsqueeze(-1))
+        return torch.sigmoid(logits)
 
 
 class AutoEncoder(nn.Module):
@@ -157,11 +149,129 @@ class AutoEncoder(nn.Module):
         self.encoder = ResEncoder(feature_size, projected_size, input_channels)
         self.decoder = Decoder(projected_size)
 
-    def forward(self, input, intermediate_outputs):
-        projection = self.encoder(input, intermediate_outputs)
-        return self.decoder(projection, intermediate_outputs)
+    def forward(self, input, intermediate_outputs: bool = False):
+        projection = self.encoder(input)
+        return self.decoder(projection)
 
-    def load_ckpt(self, ckpt_file):
-        ckpt = torch.load(ckpt_file, map_location=torch.device("cpu"))
-        self.load_state_dict(ckpt["state_dict"])
-        self.global_step = ckpt["global_step"]
+    def project(self, input):
+        return self.encoder(input)
+
+
+class DeepSupervisionNet(nn.Module):
+    def __init__(self, batch_norm: bool = False):
+        super().__init__()
+        self.global_step = 0
+        self.input_size = (3, 200, 200)
+        self.output_size = (200, 200)
+        self.sigmoid = nn.Sigmoid()
+        self.conv0 = torch.nn.Conv2d(
+            in_channels=3, out_channels=32, kernel_size=3, padding=1, stride=1
+        )
+        self.residual_1 = ResidualBlock(
+            input_channels=32,
+            output_channels=32,
+            batch_norm=batch_norm,
+            activation=torch.nn.ReLU(),
+            strides=(1, 1),
+            padding=(1, 1),
+            kernel_sizes=(3, 3),
+        )
+        self.side_logit_1 = nn.Conv2d(in_channels=32, out_channels=1, kernel_size=1)
+        self.weight_1 = nn.Parameter(torch.as_tensor(1 / 4), requires_grad=True)
+
+        self.residual_2 = ResidualBlock(
+            input_channels=32,
+            output_channels=32,
+            batch_norm=batch_norm,
+            activation=torch.nn.ReLU(),
+            strides=(2, 1),
+            padding=(1, 1),
+            kernel_sizes=(3, 3),
+        )
+        self.side_logit_2 = nn.Conv2d(in_channels=32, out_channels=1, kernel_size=1)
+        self.weight_2 = nn.Parameter(torch.as_tensor(1 / 4), requires_grad=True)
+        self.upsample_2 = nn.Upsample(scale_factor=2, mode="nearest")
+
+        self.residual_3 = ResidualBlock(
+            input_channels=32,
+            output_channels=32,
+            batch_norm=batch_norm,
+            activation=torch.nn.ReLU(),
+            strides=(2, 1),
+            padding=(1, 1),
+            kernel_sizes=(3, 3),
+        )
+        self.side_logit_3 = nn.Conv2d(in_channels=32, out_channels=1, kernel_size=1)
+        self.weight_3 = nn.Parameter(torch.as_tensor(1 / 4), requires_grad=True)
+        self.upsample_3 = nn.Upsample(scale_factor=4, mode="nearest")
+
+        self.residual_4 = ResidualBlock(
+            input_channels=32,
+            output_channels=32,
+            batch_norm=batch_norm,
+            activation=torch.nn.ReLU(),
+            strides=(2, 1),
+            padding=(1, 1),
+            kernel_sizes=(3, 3),
+        )
+        self.side_logit_4 = nn.Conv2d(in_channels=32, out_channels=1, kernel_size=1)
+        self.weight_4 = nn.Parameter(torch.as_tensor(1 / 4), requires_grad=True)
+        self.upsample_4 = nn.Upsample(scale_factor=8, mode="nearest")
+
+        self.projection_1 = ResidualBlock(
+            input_channels=32,
+            output_channels=128,
+            batch_norm=batch_norm,
+            activation=torch.nn.ReLU(),
+            strides=(2, 1),
+            padding=(1, 1),
+            kernel_sizes=(3, 3),
+        )
+        self.projection_2 = ResidualBlock(
+            input_channels=128,
+            output_channels=1024,
+            batch_norm=batch_norm,
+            activation=torch.nn.ReLU(),
+            strides=(2, 1),
+            padding=(1, 1),
+            kernel_sizes=(3, 3),
+        )
+        self.avg_pool = nn.AvgPool2d(kernel_size=3)
+
+    def forward_with_intermediate_outputs(self, inputs) -> dict:
+        results = {"x1": self.residual_1(self.conv0(inputs))}
+        results["out1"] = self.side_logit_1(results["x1"])
+        results["prob1"] = self.sigmoid(results["out1"]).squeeze(dim=1)
+
+        results["x2"] = self.residual_2(results["x1"])
+        results["out2"] = self.side_logit_2(results["x2"])
+        results["prob2"] = self.upsample_2(self.sigmoid(results["out2"])).squeeze(dim=1)
+
+        results["x3"] = self.residual_3(results["x2"])
+        results["out3"] = self.side_logit_3(results["x3"])
+        results["prob3"] = self.upsample_3(self.sigmoid(results["out3"])).squeeze(dim=1)
+
+        results["x4"] = self.residual_4(results["x3"])
+        results["out4"] = self.side_logit_4(results["x4"])
+        results["prob4"] = self.upsample_4(self.sigmoid(results["out4"])).squeeze(dim=1)
+
+        final_logit = (
+            self.weight_1 * results["out1"]
+            + self.weight_2 * self.upsample_2(results["out2"])
+            + self.weight_3 * self.upsample_3(results["out3"])
+            + self.weight_4 * self.upsample_4(results["out4"])
+        )
+        results["final_prob"] = self.sigmoid(final_logit).squeeze(dim=1)
+
+        projection = self.projection_1(results["x4"])
+        projection = self.projection_2(projection)
+        results["projection"] = self.avg_pool(projection)
+        return results
+
+    def forward(self, inputs, intermediate_outputs: bool = False) -> torch.Tensor:
+        results = self.forward_with_intermediate_outputs(inputs)
+        return results["final_prob"] if not intermediate_outputs else results
+
+    def project(self, inputs) -> torch.Tensor:
+        results = self.forward_with_intermediate_outputs(inputs)
+        return results["projection"]

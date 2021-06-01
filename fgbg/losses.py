@@ -104,15 +104,16 @@ class WeightedBinaryCrossEntropyLoss(NLLLoss):
 
 
 class DeepSupervisedWeightedBinaryCrossEntropyLoss(WeightedBinaryCrossEntropyLoss):
-    def __init__(self, beta=0.5):
+    def __init__(self, beta=0.5, mode: str = 'deep_supervision'):
         super().__init__(beta=beta, reduction="mean")
+        self.mode = mode
 
     def forward(self, inputs, target):
-        for img in inputs:
-            assert img.shape == target.shape
-        # loop over inputs with target and apply WeightedBinaryCrossEntropyLoss
         loss = 0
-        for img in inputs:
-            loss += super().forward(img, target)
-        loss = loss / len(inputs)
+        if self.mode == 'deep_supervision':
+            # loop over inputs with target and apply WeightedBinaryCrossEntropyLoss
+            for k in ['prob1', 'prob2', 'prob3', 'prob4', 'final_prob']:
+                loss += 1 / 5. * super().forward(inputs[k], target)
+        else:  # mode indicates key from inputs to use
+            loss += super().forward(inputs[self.mode])
         return loss

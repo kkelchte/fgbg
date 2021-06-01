@@ -18,19 +18,26 @@ def train_autoencoder(
     val_dataloader,
     checkpoint_file,
     tb_writer,
-    triplet_loss: float = 0.,
+    triplet_loss: float = 0.0,
     num_epochs: int = 40,
-    deep_supervision: bool = False,
-    deep_contrastive: bool = False,
+    training_mode: str = "default",
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
-    bce_loss = (
-        WeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
-        if not deep_supervision
-        else DeepSupervisedWeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
-    )
-    if triplet_loss != 0.:
+    losses_factory = {
+        "ae": WeightedBinaryCrossEntropyLoss(beta=0.9).to(device),
+        "default": DeepSupervisedWeightedBinaryCrossEntropyLoss(
+            beta=0.9, mode="prob4"
+        ).to(device),
+        "combined": DeepSupervisedWeightedBinaryCrossEntropyLoss(
+            beta=0.9, mode="final_prob"
+        ).to(device),
+        "ds": DeepSupervisedWeightedBinaryCrossEntropyLoss(
+            beta=0.9, mode="deep_supervision"
+        ).to(device),
+    }
+    bce_loss = losses_factory[training_mode]
+    if triplet_loss != 0.0:
         trplt_loss = TripletMarginLoss(swap=True).to(device)
     lowest_validation_loss = 100
     optimizer = torch.optim.Adam(
@@ -54,19 +61,13 @@ def train_autoencoder(
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
             predictions = autoencoder(
-                data["reference"].to(device), intermediate_outputs=deep_supervision
+                data["reference"].to(device), intermediate_outputs=True
             )
             loss = bce_loss(predictions, data["mask"].to(device))
             if triplet_loss != 0:
-                anchor = autoencoder.encoder(
-                    data["reference"].to(device), intermediate_outputs=deep_contrastive
-                )
-                positive = autoencoder.encoder(
-                    data["positive"].to(device), intermediate_outputs=deep_contrastive
-                )
-                negative = autoencoder.encoder(
-                    data["negative"].to(device), intermediate_outputs=deep_contrastive
-                )
+                anchor = autoencoder.project(data["reference"].to(device))
+                positive = autoencoder.project(data["positive"].to(device))
+                negative = autoencoder.project(data["negative"].to(device))
                 loss += triplet_loss * trplt_loss(anchor, positive, negative)
             loss.backward()
             optimizer.step()
@@ -79,7 +80,9 @@ def train_autoencoder(
             )
         autoencoder.eval()
         for batch_idx, data in enumerate(val_dataloader):
-            predictions = autoencoder(data["reference"].to(device))
+            predictions = autoencoder(
+                data["reference"].to(device), intermediate_outputs=False
+            )
             loss = bce_loss(predictions, data["mask"].to(device))
             losses["val"].append(loss.cpu().detach().item())
             ious["val"].append(

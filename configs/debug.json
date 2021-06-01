@@ -1,5 +1,5 @@
 {
-    "target": "cone", 
+    "target": "cone",
     "learning_rate": 0.01,
     "number_of_epochs": 1,
     "training_directory": "data/gate_cone_line",
@@ -8,5 +8,6 @@
     "texture_directory": "data/textured_dataset",
     "augment": 1,
     "blur": 0,
-    "triplet": 0
+    "triplet": 0,
+    "mode": "default"
 }
