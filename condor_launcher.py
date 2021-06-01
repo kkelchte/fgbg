@@ -12,7 +12,7 @@ OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")',
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 6,
@@ -72,6 +72,7 @@ for conf in CONFIGS:
         for lr in LEARNING_RATES:
             filename = create_condor_job_file(target, conf, lr)
             if SUBMIT:
+                print(f'submitting {filename}')
                 subprocess.call(shlex.split(f"condor_submit {filename}"))
     # wait 20 minutes
     if SUBMIT and len(CONFIGS) != 1:
