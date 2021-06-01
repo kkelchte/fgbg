@@ -1,6 +1,7 @@
 import os
 
 import torch
+import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
 import json
@@ -12,83 +13,95 @@ from .utils import normalize, get_IoU
 from .losses import WeightedBinaryCrossEntropyLoss
 
 
-def evaluate_on_dataset(
+def evaluate_qualitatively_on_dataset(
+    tag: str,
     dataset: TorchDataset,
     model: Module,
     tb_writer: SummaryWriter,
-    save_outputs: bool = False,
+    max_number_of_images: int = 15
+):
+    save_dir = os.path.join(tb_writer.get_logdir(), "imgs")
+    os.makedirs(save_dir, exist_ok=True)
+    images = []
+    for _ in range(min(len(dataset), max_number_of_images)):
+        data = dataset[_]
+        prediction = model(data["observation"].unsqueeze(0), intermediate_outputs=False)
+        mask = prediction.detach().cpu().squeeze().numpy()
+        obs = data["observation"].detach().cpu().squeeze().permute(1, 2, 0).numpy()
+        combined = obs * np.stack([mask + 0.3] * 3, axis=-1)
+        images.append(torch.from_numpy(combined).permute(2, 0, 1))
+        fig, ax = plt.subplots(1, 3, figsize=(9, 3))
+        ax[0].imshow(obs)
+        ax[0].axis("off")
+        ax[1].imshow(mask)
+        ax[1].axis("off")
+        ax[2].imshow(combined)
+        ax[2].axis("off")
+        fig.tight_layout()
+        plt.savefig(
+            os.path.join(save_dir, f'{tag}_{_}.jpg')
+        )
+        plt.close(fig=fig)
+    grid = torchvision.utils.make_grid(torch.stack(images), nrow=5)
+    tb_writer.add_image(
+        tag, grid, dataformats="CHW"
+    )
+
+
+def evaluate_quantitatively_on_dataset(
+    tag: str,
+    dataset: TorchDataset,
+    model: Module,
+    tb_writer: SummaryWriter,
 ):
     losses = []
     ious = []
     bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
-    if save_outputs:
-        save_dir = os.path.join(tb_writer.get_logdir(), "imgs")
-        os.makedirs(save_dir, exist_ok=True)
     for _ in range(min(len(dataset), 100)):
         data = dataset[_]
         prediction = model(data["observation"].unsqueeze(0), intermediate_outputs=False)
-        if "mask" in data.keys():
-            loss = bce_loss(prediction, data["mask"])
-            losses.append(loss.detach().cpu())
-            ious.append(
-                get_IoU(prediction.squeeze(0), data["mask"].unsqueeze(0)).detach().cpu()
-            )
-        if save_outputs and _ == 0:  # store first image
-            mask = prediction.detach().cpu().squeeze().numpy()
-            obs = data["observation"].detach().cpu().squeeze().permute(1, 2, 0).numpy()
-            combined = obs * np.stack([mask + 0.3] * 3, axis=-1)
-            fig, ax = plt.subplots(1, 3, figsize=(9, 3))
-            ax[0].imshow(obs)
-            ax[0].axis("off")
-            ax[1].imshow(mask)
-            ax[1].axis("off")
-            ax[2].imshow(combined)
-            ax[2].axis("off")
-            fig.tight_layout()
-            plt.savefig(
-                os.path.join(save_dir, f'{dataset.name.replace("/", "_")}_{_}.jpg')
-            )
-            tb_writer.add_image(
-                dataset.name.replace("/", "_"), combined, dataformats="HWC"
-            )
-    if len(losses) != 0:
-        tb_writer.add_scalar(
-            dataset.name.replace("/", "_") + "_bce_loss_avg",
-            torch.as_tensor(losses).mean(),
-            global_step=model.global_step,
+        loss = bce_loss(prediction, data["mask"])
+        losses.append(loss.detach().cpu())
+        ious.append(
+            get_IoU(prediction, data["mask"].unsqueeze(0)).detach().cpu()
         )
-        tb_writer.add_scalar(
-            dataset.name.replace("/", "_") + "_bce_loss_std",
-            torch.as_tensor(losses).std(),
-            global_step=model.global_step,
+    tb_writer.add_scalar(
+        tag + "_bce_loss_avg",
+        torch.as_tensor(losses).mean(),
+        global_step=model.global_step,
+    )
+    tb_writer.add_scalar(
+        tag + "_bce_loss_std",
+        torch.as_tensor(losses).std(),
+        global_step=model.global_step,
+    )
+    tb_writer.add_scalar(
+        tag + "_iou_avg",
+        torch.as_tensor(ious).mean(),
+        global_step=model.global_step,
+    )
+    tb_writer.add_scalar(
+        tag + "_iou_std",
+        torch.as_tensor(ious).std(),
+        global_step=model.global_step,
+    )
+    with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
+        f.write(
+            f"{tag}_bce_loss_avg: "
+            f"{torch.as_tensor(losses).mean()}\n",
         )
-        tb_writer.add_scalar(
-            dataset.name.replace("/", "_") + "_iou_avg",
-            torch.as_tensor(ious).mean(),
-            global_step=model.global_step,
+        f.write(
+            f"{tag}_bce_loss_std: "
+            f"{torch.as_tensor(losses).std()}\n",
         )
-        tb_writer.add_scalar(
-            dataset.name.replace("/", "_") + "_iou_std",
-            torch.as_tensor(ious).std(),
-            global_step=model.global_step,
+        f.write(
+            f"{tag}_ious_avg: "
+            f"{torch.as_tensor(ious).mean()}\n",
         )
-        with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
-            f.write(
-                f"{dataset.name.replace('/', '_')}_bce_loss_avg: "
-                f"{torch.as_tensor(losses).mean()}\n",
-            )
-            f.write(
-                f"{dataset.name.replace('/', '_')}_bce_loss_std: "
-                f"{torch.as_tensor(losses).std()}\n",
-            )
-            f.write(
-                f"{dataset.name.replace('/', '_')}_ious_avg: "
-                f"{torch.as_tensor(ious).mean()}\n",
-            )
-            f.write(
-                f"{dataset.name.replace('/', '_')}_ious_std: "
-                f"{torch.as_tensor(ious).std()}\n",
-            )
+        f.write(
+            f"{tag}_ious_std: "
+            f"{torch.as_tensor(ious).std()}\n",
+        )
 
 
 def compare_models(ood_dataset, autoencoder_trplt, autoencoder, output_file):

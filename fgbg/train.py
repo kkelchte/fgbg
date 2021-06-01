@@ -8,7 +8,6 @@ from tqdm import tqdm
 from .utils import get_date_time_tag, get_IoU
 from .losses import (
     WeightedBinaryCrossEntropyLoss,
-    DeepSupervisedWeightedBinaryCrossEntropyLoss,
 )
 
 
@@ -20,23 +19,11 @@ def train_autoencoder(
     tb_writer,
     triplet_loss: float = 0.0,
     num_epochs: int = 40,
-    training_mode: str = "default",
+    deep_supervision: bool = False,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
-    losses_factory = {
-        "ae": WeightedBinaryCrossEntropyLoss(beta=0.9).to(device),
-        "default": DeepSupervisedWeightedBinaryCrossEntropyLoss(
-            beta=0.9, mode="prob4"
-        ).to(device),
-        "combined": DeepSupervisedWeightedBinaryCrossEntropyLoss(
-            beta=0.9, mode="final_prob"
-        ).to(device),
-        "ds": DeepSupervisedWeightedBinaryCrossEntropyLoss(
-            beta=0.9, mode="deep_supervision"
-        ).to(device),
-    }
-    bce_loss = losses_factory[training_mode]
+    bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
     if triplet_loss != 0.0:
         trplt_loss = TripletMarginLoss(swap=True).to(device)
     lowest_validation_loss = 100
@@ -61,9 +48,16 @@ def train_autoencoder(
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
             predictions = autoencoder(
-                data["reference"].to(device), intermediate_outputs=True
+                data["reference"].to(device), intermediate_outputs=deep_supervision
             )
-            loss = bce_loss(predictions, data["mask"].to(device))
+            if not deep_supervision:
+                loss = bce_loss(predictions, data["mask"].to(device))
+            else:
+                loss = 0
+                for output in predictions:
+                    loss += (
+                        1 / len(predictions) * bce_loss(output, data["mask"].to(device))
+                    )
             if triplet_loss != 0:
                 anchor = autoencoder.project(data["reference"].to(device))
                 positive = autoencoder.project(data["positive"].to(device))
@@ -73,7 +67,12 @@ def train_autoencoder(
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
             ious["train"].append(
-                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze())
+                get_IoU(
+                    autoencoder(
+                        data["reference"].to(device), intermediate_outputs=False
+                    ).squeeze(),
+                    data["mask"].to(device).squeeze(),
+                )
                 .detach()
                 .cpu()
                 .item()

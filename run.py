@@ -1,5 +1,6 @@
 import os
 from argparse import ArgumentParser
+import shutil
 
 import json
 from pprint import pprint
@@ -15,6 +16,7 @@ parser.add_argument("--learning_rate", type=float)
 parser.add_argument("--output_dir", type=str)
 parser.add_argument("--target", type=str)
 parser.add_argument("--evaluate", type=bool, default=False)
+parser.add_argument("--rm", type=bool, default=False)
 config = vars(parser.parse_args())
 if config["config_file"] is not None:
     with open(config["config_file"], "r") as f:
@@ -32,15 +34,12 @@ if __name__ == "__main__":
         if "output_dir" not in config.keys()
         else config["output_dir"]
     )
+    if config["rm"] and os.path.isdir(output_directory):
+        shutil.rmtree(output_directory)
     os.makedirs(output_directory, exist_ok=True)
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
-    model = fgbg.AutoEncoder(
-        feature_size=512,
-        projected_size=512,
-        input_channels=3,
-        decode_from_projection=True,
-    )
+    model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
     print(f"{fgbg.get_date_time_tag()} - Generate dataset")
     if not bool(config["augment"]):
         dataset = fgbg.CleanDataset(
@@ -60,13 +59,13 @@ if __name__ == "__main__":
     if not config["evaluate"]:
         train_dataloader = TorchDataLoader(
             dataset=train_set,
-            batch_size=100,
+            batch_size=config["batch_size"],
             shuffle=True,
             num_workers=4 if torch.cuda.is_available() else 0,
         )
         val_dataloader = TorchDataLoader(
             dataset=val_set,
-            batch_size=100,
+            batch_size=config["batch_size"],
             shuffle=True,
             num_workers=4 if torch.cuda.is_available() else 0,
         )
@@ -83,23 +82,31 @@ if __name__ == "__main__":
             num_epochs=config["number_of_epochs"],
         )
     # set weights to best validation checkpoint
-    ckpt = torch.load(checkpoint_file, map_location=torch.device('cpu'))
+    ckpt = torch.load(checkpoint_file, map_location=torch.device("cpu"))
     model.load_state_dict(ckpt["state_dict"])
     model.global_step = ckpt["global_step"]
     model.eval()
 
-    print(f"{fgbg.get_date_time_tag()} - Evaluate on validation set")
-    fgbg.evaluate_on_dataset(val_set, model, tb_writer, save_outputs=True)
+    print(f"{fgbg.get_date_time_tag()} - Create on training image")
+    fgbg.evaluate_qualitatively_on_dataset("training", train_set, model, tb_writer)
+
+    print(f"{fgbg.get_date_time_tag()} - Create on validation image")
+    fgbg.evaluate_qualitatively_on_dataset("validation", val_set, model, tb_writer)
 
     print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")
     ood_dataset = fgbg.CleanDataset(
         hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
         json_file=os.path.join(config["ood_directory"], target, "data.json"),
     )
-    fgbg.evaluate_on_dataset(ood_dataset, model, tb_writer, save_outputs=True)
+    fgbg.evaluate_qualitatively_on_dataset(
+        "out-of-distribution", ood_dataset, model, tb_writer
+    )
+    fgbg.evaluate_quantitatively_on_dataset(
+        "out-of-distribution", ood_dataset, model, tb_writer
+    )
 
-    print(f"{fgbg.get_date_time_tag()} - Evaluate qualitatively on real images")
+    print(f"{fgbg.get_date_time_tag()} - Create output from real images")
     real_dataset = fgbg.ImagesDataset(target=target, dir_name=config["real_directory"])
-    fgbg.evaluate_on_dataset(real_dataset, model, tb_writer, save_outputs=True)
+    fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
 
     print(f"{fgbg.get_date_time_tag()} - Finished")

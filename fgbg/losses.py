@@ -101,19 +101,3 @@ class WeightedBinaryCrossEntropyLoss(NLLLoss):
             return unreduced_loss.sum()
         else:
             raise NotImplementedError
-
-
-class DeepSupervisedWeightedBinaryCrossEntropyLoss(WeightedBinaryCrossEntropyLoss):
-    def __init__(self, beta=0.5, mode: str = 'deep_supervision'):
-        super().__init__(beta=beta, reduction="mean")
-        self.mode = mode
-
-    def forward(self, inputs, target):
-        loss = 0
-        if self.mode == 'deep_supervision':
-            # loop over inputs with target and apply WeightedBinaryCrossEntropyLoss
-            for k in ['prob1', 'prob2', 'prob3', 'prob4', 'final_prob']:
-                loss += 1 / 5. * super().forward(inputs[k], target)
-        else:  # mode indicates key from inputs to use
-            loss += super().forward(inputs[self.mode])
-        return loss

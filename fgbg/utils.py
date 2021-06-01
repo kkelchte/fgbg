@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def get_IoU(predictions, labels):
-    """Code inspired by 
+    """Code inspired by
     https://www.kaggle.com/iezepov/fast-iou-scoring-metric-in-pytorch-and-numpy
     """
     eps = 1e-6

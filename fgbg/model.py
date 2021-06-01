@@ -74,92 +74,10 @@ class ResidualBlock(torch.nn.Module):
         return self._final_activation(x)
 
 
-class ResEncoder(nn.Module):
-    def __init__(
-        self, feature_size: int = 256, projected_size: int = 5, input_channels: int = 1
-    ):
-        super().__init__()
-        self.encoding_layers = nn.Sequential(
-            OrderedDict(
-                [
-                    ("conv1", nn.Conv2d(input_channels, 8, 3, stride=2)),
-                    ("bn_1", torch.nn.BatchNorm2d(8)),
-                    ("relu1", nn.ReLU()),
-                    ("res2", ResidualBlock(8, 16, padding=(1, 1), strides=(2, 1))),
-                    ("res3", ResidualBlock(16, 32, padding=(1, 1), strides=(2, 1))),
-                    ("res4", ResidualBlock(32, 64, padding=(1, 1), strides=(2, 1))),
-                    ("res5", ResidualBlock(64, 128, padding=(1, 1), strides=(2, 1))),
-                    (
-                        "res6",
-                        ResidualBlock(
-                            128, feature_size, padding=(1, 1), strides=(2, 1)
-                        ),
-                    ),
-                    ("pool", nn.MaxPool2d(2)),
-                ]
-            )
-        )
-        self.projection = nn.Sequential(
-            OrderedDict(
-                [
-                    # ("fc1", nn.Linear(feature_size, feature_size)),
-                    # ("relu2", nn.ReLU()),
-                    ("fc", nn.Linear(feature_size, projected_size)),
-                ]
-            )
-        )
-
-    def forward(self, inputs: torch.Tensor):
-        high_dim_feature = self.encoding_layers(inputs).squeeze(-1).squeeze(-1)
-        return self.projection(high_dim_feature)
-
-
-class Decoder(nn.Module):
-    def __init__(self, input_size: int = 5):
-        super().__init__()
-        self.layers = nn.Sequential(
-            OrderedDict(
-                [
-                    ("deconv1", nn.ConvTranspose2d(input_size, 128, 3, stride=2)),
-                    ("relu1", nn.ReLU()),
-                    ("deconv2", nn.ConvTranspose2d(128, 64, 3, stride=2)),
-                    ("relu2", nn.ReLU()),
-                    ("deconv3", nn.ConvTranspose2d(64, 32, 3, stride=2)),
-                    ("relu3", nn.ReLU()),
-                    ("deconv4", nn.ConvTranspose2d(32, 16, 3, stride=2)),
-                    ("relu4", nn.ReLU()),
-                    ("deconv5", nn.ConvTranspose2d(16, 8, 3, stride=2)),
-                    ("relu5", nn.ReLU()),
-                    ("deconv6", nn.ConvTranspose2d(8, 1, 4, stride=2)),
-                ]
-            )
-        )
-
-    def forward(self, inpt: torch.Tensor):
-        logits = self.layers(inpt.unsqueeze(-1).unsqueeze(-1))
-        return torch.sigmoid(logits)
-
-
-class AutoEncoder(nn.Module):
-    def __init__(
-        self, feature_size: int = 256, projected_size: int = 5, input_channels: int = 1,
-    ):
-        super().__init__()
-        self.global_step = 0
-        self.encoder = ResEncoder(feature_size, projected_size, input_channels)
-        self.decoder = Decoder(projected_size)
-
-    def forward(self, input, intermediate_outputs: bool = False):
-        projection = self.encoder(input)
-        return self.decoder(projection)
-
-    def project(self, input):
-        return self.encoder(input)
-
-
 class DeepSupervisionNet(nn.Module):
-    def __init__(self, batch_norm: bool = False):
+    def __init__(self, batch_norm: bool = False, mode: str = "default"):
         super().__init__()
+        self.mode = mode
         self.global_step = 0
         self.input_size = (3, 200, 200)
         self.output_size = (200, 200)
@@ -236,7 +154,7 @@ class DeepSupervisionNet(nn.Module):
             padding=(1, 1),
             kernel_sizes=(3, 3),
         )
-        self.avg_pool = nn.AvgPool2d(kernel_size=3)
+        self.avg_pool = nn.MaxPool2d(kernel_size=5, stride=5)
 
     def forward_with_intermediate_outputs(self, inputs) -> dict:
         results = {"x1": self.residual_1(self.conv0(inputs))}
@@ -270,7 +188,16 @@ class DeepSupervisionNet(nn.Module):
 
     def forward(self, inputs, intermediate_outputs: bool = False) -> torch.Tensor:
         results = self.forward_with_intermediate_outputs(inputs)
-        return results["final_prob"] if not intermediate_outputs else results
+        if intermediate_outputs:
+            return [
+                results["prob1"],
+                results["prob2"],
+                results["prob3"],
+                results["prob4"],
+                results["final_prob"],
+            ]
+        else:
+            return results["prob4" if self.mode == "default" else "final_prob"]
 
     def project(self, inputs) -> torch.Tensor:
         results = self.forward_with_intermediate_outputs(inputs)

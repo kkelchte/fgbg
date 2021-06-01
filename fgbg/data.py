@@ -12,6 +12,8 @@ from torch.utils.data import Dataset as TorchDataset
 
 from .utils import load_img, combine, generate_random_square
 
+IMAGE_SIZE = (200, 200)
+
 
 class SquareCircleDataset(TorchDataset):
     def __len__(self) -> int:
@@ -178,13 +180,13 @@ class CleanDataset(TorchDataset):
         hsh, sample_index = self.hash_index_tuples[index]
         observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
         observation = cv2.resize(
-            np.asarray(observation), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
+            np.asarray(observation), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
         )
         observation = torch.from_numpy(observation).permute(2, 0, 1).float()
 
         mask = np.asarray(self.hdf5_file[hsh]["mask"][sample_index])
         mask = cv2.resize(
-            np.asarray(mask), dsize=(128, 128), interpolation=cv2.INTER_NEAREST
+            np.asarray(mask), dsize=IMAGE_SIZE, interpolation=cv2.INTER_NEAREST
         )
         mask = torch.from_numpy(mask).float()
 
@@ -237,7 +239,7 @@ class AugmentedTripletDataset(CleanDataset):
 
         observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
         observation = cv2.resize(
-            np.asarray(observation), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
+            np.asarray(observation), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
         )
 
         # select foreground color and background map
@@ -270,17 +272,18 @@ class AugmentedTripletDataset(CleanDataset):
             self.hdf5_file[second_hsh]["observation"][second_sample_index]
         )
         second_observation = cv2.resize(
-            np.asarray(second_observation), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
+            np.asarray(second_observation),
+            dsize=IMAGE_SIZE,
+            interpolation=cv2.INTER_LANCZOS4,
         )
-        second_mask = np.asarray(self.hdf5_file[second_hsh]["mask"][second_sample_index])
+        second_mask = np.asarray(
+            self.hdf5_file[second_hsh]["mask"][second_sample_index]
+        )
         second_mask = cv2.resize(
-            np.asarray(second_mask), dsize=(128, 128), interpolation=cv2.INTER_LANCZOS4
+            np.asarray(second_mask), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
         )
         result["negative"] = combine(
-            second_mask,
-            second_observation,
-            background_img,
-            blur=self._blur,
+            second_mask, second_observation, background_img, blur=self._blur,
         )
         return result
 
@@ -301,6 +304,6 @@ class ImagesDataset(TorchDataset):
     def __getitem__(self, index):
         img_file = self.images[index]
         image = Image.open(img_file)
-        image = np.array(image.resize((128, 128)), dtype=np.float32)
-        image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.
+        image = np.array(image.resize(IMAGE_SIZE), dtype=np.float32)
+        image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
         return {"observation": image}
