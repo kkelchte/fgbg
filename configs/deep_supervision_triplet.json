@@ -1,9 +1,9 @@
 {
     "target": "cone",
     "learning_rate": 0.01,
-    "batch_size": 10,
-    "number_of_epochs": 1,
-    "training_directory": "data/debug_data",
+    "batch_size": 64,
+    "number_of_epochs": 100,
+    "training_directory": "data/gate_cone_line",
     "ood_directory": "data/gate_cone_line_realistic",
     "real_directory": "data/bebop_real",
     "texture_directory": "data/textured_dataset",
