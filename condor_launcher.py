@@ -25,7 +25,7 @@ SPECS = {
 
 TARGETS = ["cone", "gate", "line"]
 #CONFIGS = [f"configs/{cf}.json" for cf in ["baseline", "augment", "augment_blur", "augment_blur_triplet"]]
-CONFIGS = [f"configs/{cf}.json" for cf in ["augment"]]
+CONFIGS = [f"configs/{cf}.json" for cf in ["augment_triplet"]]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
 # TARGETS = ["cone"]

@@ -24,15 +24,14 @@ def evaluate_on_dataset(
     if save_outputs:
         save_dir = os.path.join(tb_writer.get_logdir(), "imgs")
         os.makedirs(save_dir, exist_ok=True)
-    randomly_selected_indices_to_save = np.random.choice(list(range(len(dataset))))
-    for _ in range(len(dataset)):
+    for _ in range(min(len(dataset), 100)):
         data = dataset[_]
         prediction = model(data["observation"].unsqueeze(0))
         if "mask" in data.keys():
             loss = bce_loss(prediction, data["mask"])
             losses.append(loss.detach().cpu())
             ious.append(get_IoU(prediction.squeeze(0), data["mask"].unsqueeze(0)).detach().cpu())
-        if save_outputs and _ == randomly_selected_indices_to_save:
+        if save_outputs and _ == 0:  # store first image
             mask = prediction.detach().cpu().squeeze().numpy()
             obs = data["observation"].detach().cpu().squeeze().permute(1, 2, 0).numpy()
             combined = obs * np.stack([mask + 0.3] * 3, axis=-1)

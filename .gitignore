@@ -133,5 +133,6 @@ dmypy.json
 # Added
 data
 
+.vscode
 .vscode/settings.json
 .vscode/launch.json
