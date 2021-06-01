@@ -6,7 +6,10 @@ import numpy as np
 from tqdm import tqdm
 
 from .utils import get_date_time_tag, get_IoU
-from .losses import WeightedBinaryCrossEntropyLoss
+from .losses import (
+    WeightedBinaryCrossEntropyLoss,
+    DeepSupervisedWeightedBinaryCrossEntropyLoss,
+)
 
 
 def train_autoencoder(
@@ -15,13 +18,19 @@ def train_autoencoder(
     val_dataloader,
     checkpoint_file,
     tb_writer,
-    triplet_loss: bool = False,
+    triplet_loss: float = 0.,
     num_epochs: int = 40,
+    deep_supervision: bool = False,
+    deep_contrastive: bool = False,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
-    bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
-    if triplet_loss:
+    bce_loss = (
+        WeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
+        if not deep_supervision
+        else DeepSupervisedWeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
+    )
+    if triplet_loss != 0.:
         trplt_loss = TripletMarginLoss(swap=True).to(device)
     lowest_validation_loss = 100
     optimizer = torch.optim.Adam(
@@ -33,7 +42,10 @@ def train_autoencoder(
         autoencoder.global_step = ckpt["global_step"]
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         lowest_validation_loss = ckpt["lowest_val_loss"]
-        print(f'loaded checkpoint {checkpoint_file}. Starting to train from {autoencoder.global_step}')
+        print(
+            f"loaded checkpoint {checkpoint_file}. "
+            f"Starting from {autoencoder.global_step}"
+        )
 
     while autoencoder.global_step < num_epochs:
         losses = {"train": [], "val": []}
@@ -41,29 +53,41 @@ def train_autoencoder(
         autoencoder.train()
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
-            predictions = autoencoder(data["reference"].to(device))
-            loss = bce_loss(
-                predictions, data["mask"].to(device)
+            predictions = autoencoder(
+                data["reference"].to(device), intermediate_outputs=deep_supervision
             )
-            if triplet_loss:
-                anchor = autoencoder.encoder(data["reference"].to(device))
-                positive = autoencoder.encoder(data["positive"].to(device))
-                negative = autoencoder.encoder(data["negative"].to(device))
-                loss += 0.1 * trplt_loss(anchor, positive, negative)
+            loss = bce_loss(predictions, data["mask"].to(device))
+            if triplet_loss != 0:
+                anchor = autoencoder.encoder(
+                    data["reference"].to(device), intermediate_outputs=deep_contrastive
+                )
+                positive = autoencoder.encoder(
+                    data["positive"].to(device), intermediate_outputs=deep_contrastive
+                )
+                negative = autoencoder.encoder(
+                    data["negative"].to(device), intermediate_outputs=deep_contrastive
+                )
+                loss += triplet_loss * trplt_loss(anchor, positive, negative)
             loss.backward()
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
             ious["train"].append(
-                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze()).detach().cpu().item())
+                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze())
+                .detach()
+                .cpu()
+                .item()
+            )
         autoencoder.eval()
         for batch_idx, data in enumerate(val_dataloader):
             predictions = autoencoder(data["reference"].to(device))
-            loss = bce_loss(
-                predictions, data["mask"].to(device)
-            )
+            loss = bce_loss(predictions, data["mask"].to(device))
             losses["val"].append(loss.cpu().detach().item())
             ious["val"].append(
-                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze()).detach().cpu().item())
+                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze())
+                .detach()
+                .cpu()
+                .item()
+            )
 
         print(
             f"{get_date_time_tag()}: epoch {autoencoder.global_step} - "

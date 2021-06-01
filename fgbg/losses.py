@@ -101,3 +101,18 @@ class WeightedBinaryCrossEntropyLoss(NLLLoss):
             return unreduced_loss.sum()
         else:
             raise NotImplementedError
+
+
+class DeepSupervisedWeightedBinaryCrossEntropyLoss(WeightedBinaryCrossEntropyLoss):
+    def __init__(self, beta=0.5):
+        super().__init__(beta=beta, reduction="mean")
+
+    def forward(self, inputs, target):
+        for img in inputs:
+            assert img.shape == target.shape
+        # loop over inputs with target and apply WeightedBinaryCrossEntropyLoss
+        loss = 0
+        for img in inputs:
+            loss += super().forward(img, target)
+        loss = loss / len(inputs)
+        return loss
