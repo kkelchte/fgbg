@@ -8,22 +8,8 @@ from torch.nn import Module
 from torch.utils.tensorboard.writer import SummaryWriter
 from torch.utils.data import Dataset as TorchDataset
 
-from .utils import normalize
+from .utils import normalize, get_IoU
 from .losses import WeightedBinaryCrossEntropyLoss
-
-
-def get_IoU(predictions, labels):
-    eps = 1e-6
-    outputs = predictions.round().int()
-    labels = labels.int()
-    # from: https://www.kaggle.com/iezepov/fast-iou-scoring-metric-in-pytorch-and-numpy
-    # Will be zero if Truth=0 or Prediction=0
-    intersection = (outputs & labels).float().sum((1, 2))
-    # Will be zero if both are
-    union = (outputs | labels).float().sum((1, 2))
-    # We smooth our devision to avoid 0/0
-    iou = (intersection + eps) / (union + eps)
-    return iou.mean()
 
 
 def evaluate_on_dataset(
@@ -45,7 +31,7 @@ def evaluate_on_dataset(
         if "mask" in data.keys():
             loss = bce_loss(prediction, data["mask"])
             losses.append(loss.detach().cpu())
-            ious.append(get_IoU(prediction, data["mask"]).detach().cpu())
+            ious.append(get_IoU(prediction.squeeze(0), data["mask"].unsqueeze(0)).detach().cpu())
         if save_outputs and _ == randomly_selected_indices_to_save:
             mask = prediction.detach().cpu().squeeze().numpy()
             obs = data["observation"].detach().cpu().squeeze().permute(1, 2, 0).numpy()

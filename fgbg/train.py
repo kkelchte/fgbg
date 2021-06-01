@@ -5,7 +5,7 @@ from torch.nn import TripletMarginLoss
 import numpy as np
 from tqdm import tqdm
 
-from .utils import get_date_time_tag
+from .utils import get_date_time_tag, get_IoU
 from .losses import WeightedBinaryCrossEntropyLoss
 
 
@@ -33,14 +33,17 @@ def train_autoencoder(
         autoencoder.global_step = ckpt["global_step"]
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         lowest_validation_loss = ckpt["lowest_val_loss"]
+        print(f'loaded checkpoint {checkpoint_file}. Starting to train from {autoencoder.global_step}')
 
     while autoencoder.global_step < num_epochs:
         losses = {"train": [], "val": []}
+        ious = {"train": [], "val": []}
         autoencoder.train()
         for batch_idx, data in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
+            predictions = autoencoder(data["reference"].to(device))
             loss = bce_loss(
-                autoencoder(data["reference"].to(device)), data["mask"].to(device)
+                predictions, data["mask"].to(device)
             )
             if triplet_loss:
                 anchor = autoencoder.encoder(data["reference"].to(device))
@@ -50,12 +53,18 @@ def train_autoencoder(
             loss.backward()
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
+            ious["train"].append(
+                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze()).detach().cpu().item())
         autoencoder.eval()
         for batch_idx, data in enumerate(val_dataloader):
+            predictions = autoencoder(data["reference"].to(device))
             loss = bce_loss(
-                autoencoder(data["reference"].to(device)), data["mask"].to(device)
+                predictions, data["mask"].to(device)
             )
             losses["val"].append(loss.cpu().detach().item())
+            ious["val"].append(
+                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze()).detach().cpu().item())
+
         print(
             f"{get_date_time_tag()}: epoch {autoencoder.global_step} - "
             f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
@@ -69,6 +78,16 @@ def train_autoencoder(
         tb_writer.add_scalar(
             "val/bce_loss/autoencoder" + ("" if not triplet_loss else "_trplt"),
             np.mean(losses["val"]),
+            global_step=autoencoder.global_step,
+        )
+        tb_writer.add_scalar(
+            "train/iou/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            np.mean(ious["train"]),
+            global_step=autoencoder.global_step,
+        )
+        tb_writer.add_scalar(
+            "val/iou/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            np.mean(ious["val"]),
             global_step=autoencoder.global_step,
         )
         autoencoder.global_step += 1

@@ -6,6 +6,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def get_IoU(predictions, labels):
+    eps = 1e-6
+    # assert N x H x W
+    assert len(predictions.shape) == 3
+    assert len(labels.shape) == 3
+    outputs = predictions.round().int()
+    labels = labels.int()
+    # from: https://www.kaggle.com/iezepov/fast-iou-scoring-metric-in-pytorch-and-numpy
+    # Will be zero if Truth=0 or Prediction=0
+    intersection = (outputs & labels).float().sum((1, 2))
+    # Will be zero if both are
+    union = (outputs | labels).float().sum((1, 2))
+    # We smooth our devision to avoid 0/0
+    iou = (intersection + eps) / (union + eps)
+    return iou.mean()
+
+
 def generate_random_square():
     color = (1, 1, 1)
     img = np.zeros((128, 128, 1), np.uint8)
