@@ -9,7 +9,7 @@
     "texture_directory": "data/textured_dataset",
     "augment": 1,
     "blur": 0,
-    "triplet": 0,
-    "mode": "default",
+    "triplet": 1,
+    "mode": "combined",
     "batch_normalisation": 0
 }
