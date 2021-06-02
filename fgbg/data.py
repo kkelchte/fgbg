@@ -251,7 +251,7 @@ class AugmentedTripletDataset(CleanDataset):
         result["reference"] = combine(
             result["mask"].numpy(), observation, background_img, blur=self._blur
         )
-
+        result["observation"] = result["reference"]
         # add different background for positive sample
         new_background_img = load_img(
             np.random.choice(self._background_images), size=observation.shape
