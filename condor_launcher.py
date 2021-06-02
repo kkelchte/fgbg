@@ -1,7 +1,6 @@
 import os
 import time
 import shutil
-from glob import glob
 import subprocess
 import shlex
 
@@ -59,7 +58,7 @@ def create_condor_job_file(trgt, config, lrate):
     with open(os.path.join(output_dir, "condor.job"), "w") as jobfile:
         jobfile.write(f"executable     = {INTERPRETER_PATH} \n")
         jobfile.write(
-            f"arguments     = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
+            f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir}\n"
         )

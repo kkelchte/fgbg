@@ -62,7 +62,7 @@ def train_autoencoder(
                 negative = autoencoder.project(data["negative"].to(device))
                 triplet = triplet_loss_weight * trplt_loss(anchor, positive, negative)
                 # print(
-                #     f"loss: {loss} vs trplt: {triplet} (weight: {triplet_loss_weight})"
+                # f"loss: {loss} vs trplt: {triplet} (weight: {triplet_loss_weight})"
                 # )
                 loss += triplet
             loss.backward()
@@ -133,21 +133,13 @@ def train_autoencoder(
             )
             with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
                 f.write(
-                    f"validation_bce_loss_avg: "
-                    f"{np.mean(losses['val']):10.3e}\n",
+                    f"validation_bce_loss_avg: " f"{np.mean(losses['val']):10.3e}\n",
                 )
                 f.write(
-                    f"validation_bce_loss_std: "
-                    f"{np.std(losses['val']):10.2e}\n",
+                    f"validation_bce_loss_std: " f"{np.std(losses['val']):10.2e}\n",
                 )
-                f.write(
-                    f"validation_iou_avg: "
-                    f"{np.mean(ious['val']):10.3e}\n",
-                )
-                f.write(
-                    f"validation_iou_std: "
-                    f"{np.std(ious['val']):10.2e}\n",
-                )
+                f.write(f"validation_iou_avg: " f"{np.mean(ious['val']):10.3e}\n",)
+                f.write(f"validation_iou_std: " f"{np.std(ious['val']):10.2e}\n",)
             print(f"Saved model in {checkpoint_file}.")
     autoencoder.to(torch.device("cpu"))
 
