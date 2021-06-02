@@ -33,10 +33,10 @@ def test_data_loading_augment():
         background_images_directory="data/textured_dataset",
     )
     data_item = dataset[0]
-    #for k in data_item.keys():
+    # for k in data_item.keys():
     #    print(k, data_item[k].shape)
-    
-    plt.imshow(data_item['observation'].permute(1, 2, 0).numpy())
+
+    plt.imshow(data_item["observation"].permute(1, 2, 0).numpy())
     plt.show()
 
 
