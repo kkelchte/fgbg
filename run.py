@@ -87,13 +87,13 @@ if __name__ == "__main__":
     model.global_step = ckpt["global_step"]
     model.eval()
 
-    print(f"{fgbg.get_date_time_tag()} - Create on training image")
+    print(f"{fgbg.get_date_time_tag()} - Evaluate on training images")
     fgbg.evaluate_qualitatively_on_dataset("training", train_set, model, tb_writer)
 
-    print(f"{fgbg.get_date_time_tag()} - Create on validation image")
+    print(f"{fgbg.get_date_time_tag()} - Evaluate on validation images")
     fgbg.evaluate_qualitatively_on_dataset("validation", val_set, model, tb_writer)
 
-    print(f"{fgbg.get_date_time_tag()} - Evaluate Out-of-distribution")
+    print(f"{fgbg.get_date_time_tag()} - Evaluate on out-of-distribution images")
     ood_dataset = fgbg.CleanDataset(
         hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
         json_file=os.path.join(config["ood_directory"], target, "data.json"),
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         "out-of-distribution", ood_dataset, model, tb_writer
     )
 
-    print(f"{fgbg.get_date_time_tag()} - Create output from real images")
+    print(f"{fgbg.get_date_time_tag()} - Evaluate on real images")
     real_dataset = fgbg.ImagesDataset(target=target, dir_name=config["real_directory"])
     fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
 

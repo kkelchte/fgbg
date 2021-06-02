@@ -1,7 +1,7 @@
 {
     "target": "cone",
     "learning_rate": 0.01,
-    "batch_size": 64,
+    "batch_size": 10,
     "number_of_epochs": 100,
     "training_directory": "data/gate_cone_line",
     "ood_directory": "data/gate_cone_line_realistic",
@@ -9,7 +9,7 @@
     "texture_directory": "data/dtd",
     "augment": 1,
     "blur": 0,
-    "triplet": 0,
+    "triplet": 1,
     "mode": "default",
     "batch_normalisation": 0
 }

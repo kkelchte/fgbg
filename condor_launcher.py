@@ -15,17 +15,16 @@ SPECS = {
     "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
-    "RequestCpus": 6,
+    "RequestCpus": 4,
     "Request_GPUs": 1,
     "RequestMemory": "5 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
-    "+RequestWalltime": 60 * 60,
+    "+RequestWalltime": int(100 * 3 * 60 * 1.3),
 }
 
 TARGETS = ["cone", "gate", "line"]
-#CONFIGS = [f"configs/{cf}.json" for cf in ["baseline", "augment", "augment_blur", "augment_blur_triplet"]]
-CONFIGS = [f"configs/{cf}.json" for cf in ["augment_triplet"]]
+CONFIGS = [f"configs/{cf}.json" for cf in ["default", "default_triplet", "combined", "combined_triplet", "deep_supervision", "deep_supervision_triplet"]]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
 # TARGETS = ["cone"]
