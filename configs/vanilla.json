@@ -7,9 +7,9 @@
     "ood_directory": "data/gate_cone_line_realistic",
     "real_directory": "data/bebop_real",
     "texture_directory": "data/dtd",
-    "augment": 1,
+    "augment": 0,
     "blur": 0,
     "triplet": 0,
-    "mode": "combined",
+    "mode": "default",
     "batch_normalisation": 0
 }

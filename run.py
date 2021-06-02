@@ -78,7 +78,7 @@ if __name__ == "__main__":
             val_dataloader,
             checkpoint_file,
             tb_writer,
-            triplet_loss=bool(config["triplet"]),
+            triplet_loss_weight=config["triplet"],
             num_epochs=config["number_of_epochs"],
         )
     # set weights to best validation checkpoint

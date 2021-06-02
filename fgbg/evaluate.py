@@ -85,22 +85,22 @@ def evaluate_quantitatively_on_dataset(
         torch.as_tensor(ious).std(),
         global_step=model.global_step,
     )
-    with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
+    with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "a") as f:
         f.write(
             f"{tag}_bce_loss_avg: "
-            f"{torch.as_tensor(losses).mean()}\n",
+            f"{torch.as_tensor(losses).mean():10.3e}\n",
         )
         f.write(
             f"{tag}_bce_loss_std: "
-            f"{torch.as_tensor(losses).std()}\n",
+            f"{torch.as_tensor(losses).std():10.2e}\n",
         )
         f.write(
             f"{tag}_ious_avg: "
-            f"{torch.as_tensor(ious).mean()}\n",
+            f"{torch.as_tensor(ious).mean():10.3e}\n",
         )
         f.write(
             f"{tag}_ious_std: "
-            f"{torch.as_tensor(ious).std()}\n",
+            f"{torch.as_tensor(ious).std():10.2e}\n",
         )
 
 

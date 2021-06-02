@@ -8,8 +8,8 @@
     "real_directory": "data/bebop_real",
     "texture_directory": "data/dtd",
     "augment": 1,
-    "blur": 0,
+    "blur": 1,
     "triplet": 0.05,
-    "mode": "default",
+    "mode": "deep_supervision",
     "batch_normalisation": 0
 }

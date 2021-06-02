@@ -6,9 +6,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .utils import get_date_time_tag, get_IoU
-from .losses import (
-    WeightedBinaryCrossEntropyLoss,
-)
+from .losses import WeightedBinaryCrossEntropyLoss
 
 
 def train_autoencoder(
@@ -17,14 +15,14 @@ def train_autoencoder(
     val_dataloader,
     checkpoint_file,
     tb_writer,
-    triplet_loss: float = 0.0,
+    triplet_loss_weight: float = 0.0,
     num_epochs: int = 40,
     deep_supervision: bool = False,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
     bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9).to(device)
-    if triplet_loss != 0.0:
+    if triplet_loss_weight != 0.0:
         trplt_loss = TripletMarginLoss(swap=True).to(device)
     lowest_validation_loss = 100
     optimizer = torch.optim.Adam(
@@ -58,11 +56,15 @@ def train_autoencoder(
                     loss += (
                         1 / len(predictions) * bce_loss(output, data["mask"].to(device))
                     )
-            if triplet_loss != 0:
+            if triplet_loss_weight != 0:
                 anchor = autoencoder.project(data["reference"].to(device))
                 positive = autoencoder.project(data["positive"].to(device))
                 negative = autoencoder.project(data["negative"].to(device))
-                loss += triplet_loss * trplt_loss(anchor, positive, negative)
+                triplet = triplet_loss_weight * trplt_loss(anchor, positive, negative)
+                # print(
+                #     f"loss: {loss} vs trplt: {triplet} (weight: {triplet_loss_weight})"
+                # )
+                loss += triplet
             loss.backward()
             optimizer.step()
             losses["train"].append(loss.cpu().detach().item())
@@ -97,22 +99,23 @@ def train_autoencoder(
             f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
         )
         tb_writer.add_scalar(
-            "train/bce_loss/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            "train/bce_loss/autoencoder"
+            + ("" if not triplet_loss_weight else "_trplt"),
             np.mean(losses["train"]),
             global_step=autoencoder.global_step,
         )
         tb_writer.add_scalar(
-            "val/bce_loss/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            "val/bce_loss/autoencoder" + ("" if not triplet_loss_weight else "_trplt"),
             np.mean(losses["val"]),
             global_step=autoencoder.global_step,
         )
         tb_writer.add_scalar(
-            "train/iou/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            "train/iou/autoencoder" + ("" if not triplet_loss_weight else "_trplt"),
             np.mean(ious["train"]),
             global_step=autoencoder.global_step,
         )
         tb_writer.add_scalar(
-            "val/iou/autoencoder" + ("" if not triplet_loss else "_trplt"),
+            "val/iou/autoencoder" + ("" if not triplet_loss_weight else "_trplt"),
             np.mean(ious["val"]),
             global_step=autoencoder.global_step,
         )
@@ -128,6 +131,23 @@ def train_autoencoder(
             torch.save(
                 ckpt, checkpoint_file,
             )
+            with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
+                f.write(
+                    f"validation_bce_loss_avg: "
+                    f"{np.mean(losses['val']):10.3e}\n",
+                )
+                f.write(
+                    f"validation_bce_loss_std: "
+                    f"{np.std(losses['val']):10.2e}\n",
+                )
+                f.write(
+                    f"validation_iou_avg: "
+                    f"{np.mean(ious['val']):10.3e}\n",
+                )
+                f.write(
+                    f"validation_iou_std: "
+                    f"{np.std(ious['val']):10.2e}\n",
+                )
             print(f"Saved model in {checkpoint_file}.")
     autoencoder.to(torch.device("cpu"))
 

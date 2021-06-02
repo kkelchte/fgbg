@@ -9,7 +9,7 @@
     "texture_directory": "data/dtd",
     "augment": 1,
     "blur": 0,
-    "triplet": 1,
+    "triplet": 0.05,
     "mode": "deep_supervision",
     "batch_normalisation": 0
 }
