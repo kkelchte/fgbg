@@ -28,15 +28,22 @@ def test_data_loading_clean():
 
 def test_data_loading_augment():
     dataset = fgbg.AugmentedTripletDataset(
-        hdf5_file="data/gate_cone_line/cone/data.hdf5",
-        json_file="data/gate_cone_line/cone/data.json",
-        background_images_directory="data/textured_dataset",
+        hdf5_file="data/gate_cone_line/line/data.hdf5",
+        json_file="data/gate_cone_line/line/data.json",
+        target='line',
+        background_images_directory="data/dtd",
     )
     data_item = dataset[0]
     # for k in data_item.keys():
     #    print(k, data_item[k].shape)
 
     plt.imshow(data_item["observation"].permute(1, 2, 0).numpy())
+    plt.show()
+
+
+def test_foreground_map():
+    image = fgbg.create_random_gradient_image(size=(200, 200, 3))
+    plt.imshow(image)
     plt.show()
 
 

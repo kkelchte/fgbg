@@ -10,7 +10,12 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset as TorchDataset
 
-from .utils import load_img, combine, generate_random_square, create_random_gradient_image
+from .utils import (
+    load_img,
+    combine,
+    generate_random_square,
+    create_random_gradient_image,
+)
 
 IMAGE_SIZE = (200, 200)
 
@@ -244,8 +249,12 @@ class AugmentedTripletDataset(CleanDataset):
             np.asarray(observation), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
         )
 
-        # select foreground color and background map        
-        foreground = create_random_gradient_image(size=observation.shape) if self.target == 'line' else observation
+        # select foreground color and background map
+        foreground = (
+            create_random_gradient_image(size=observation.shape)
+            if self.target == "line"
+            else observation
+        )
         background_img = load_img(
             np.random.choice(self._background_images), size=observation.shape
         )
@@ -271,7 +280,7 @@ class AugmentedTripletDataset(CleanDataset):
             random_other_index = np.random.randint(0, len(self))
 
         second_hsh, second_sample_index = self.hash_index_tuples[random_other_index]
-        if self.target != 'line':
+        if self.target != "line":
             second_foreground = np.asarray(
                 self.hdf5_file[second_hsh]["observation"][second_sample_index]
             )
@@ -281,7 +290,7 @@ class AugmentedTripletDataset(CleanDataset):
                 interpolation=cv2.INTER_LANCZOS4,
             )
         else:
-            second_foreground = create_random_gradient_image(size=IMAGE_SIZE)
+            second_foreground = create_random_gradient_image(size=observation.shape)
         second_mask = np.asarray(
             self.hdf5_file[second_hsh]["mask"][second_sample_index]
         )

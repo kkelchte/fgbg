@@ -125,7 +125,7 @@ def create_random_gradient_image(
         vertical_gradient = np.concatenate(
             [np.ones(x1) * color_a, gradient, np.ones(size[0] - x2) * color_b]
         )
-        channels[_] = np.stack([vertical_gradient] * size[1], axis=1)
+        channels.append(np.stack([vertical_gradient] * size[1], axis=1))
     image = np.stack(channels, axis=-1)
     return image
 
