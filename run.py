@@ -39,7 +39,17 @@ if __name__ == "__main__":
     os.makedirs(output_directory, exist_ok=True)
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
-    model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
+    if config["task"] == "pretrain":
+        model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
+    elif config["task"] == "velocities":
+        model = fgbg.DownstreamNet(
+            output_size=(4,), encoder_ckpt_dir=config["encoder_ckpt_dir"]
+        )
+    elif config["task"] == "waypoints":
+        model = fgbg.DownstreamNet(
+            output_size=(3,), encoder_ckpt_dir=config["encoder_ckpt_dir"]
+        )
+
     print(f"{fgbg.get_date_time_tag()} - Generate dataset")
     if not bool(config["augment"]):
         dataset = fgbg.CleanDataset(
@@ -72,42 +82,55 @@ if __name__ == "__main__":
         )
 
         print(f"{fgbg.get_date_time_tag()} - Train autoencoder")
-
-        fgbg.train_autoencoder(
-            model,
-            train_dataloader,
-            val_dataloader,
-            checkpoint_file,
-            tb_writer,
-            triplet_loss_weight=config["triplet"],
-            num_epochs=config["number_of_epochs"],
-        )
+        if config["task"] == "pretrain":
+            fgbg.train_autoencoder(
+                model,
+                train_dataloader,
+                val_dataloader,
+                checkpoint_file,
+                tb_writer,
+                triplet_loss_weight=config["triplet"],
+                num_epochs=config["number_of_epochs"],
+            )
+        else:
+            fgbg.train_downstream_task(
+                model,
+                train_dataloader,
+                val_dataloader,
+                checkpoint_file,
+                tb_writer,
+                task=config["task"],
+                num_epochs=config["number_of_epochs"],
+            )
     # set weights to best validation checkpoint
     ckpt = torch.load(checkpoint_file, map_location=torch.device("cpu"))
     model.load_state_dict(ckpt["state_dict"])
     model.global_step = ckpt["global_step"]
     model.eval()
 
-    print(f"{fgbg.get_date_time_tag()} - Evaluate on training images")
-    fgbg.evaluate_qualitatively_on_dataset("training", train_set, model, tb_writer)
+    if config["task"] == "pretrain":
+        print(f"{fgbg.get_date_time_tag()} - Evaluate on training images")
+        fgbg.evaluate_qualitatively_on_dataset("training", train_set, model, tb_writer)
 
-    print(f"{fgbg.get_date_time_tag()} - Evaluate on validation images")
-    fgbg.evaluate_qualitatively_on_dataset("validation", val_set, model, tb_writer)
+        print(f"{fgbg.get_date_time_tag()} - Evaluate on validation images")
+        fgbg.evaluate_qualitatively_on_dataset("validation", val_set, model, tb_writer)
 
+        print(f"{fgbg.get_date_time_tag()} - Evaluate on real images")
+        real_dataset = fgbg.ImagesDataset(
+            target=target, dir_name=config["real_directory"]
+        )
+        fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
     print(f"{fgbg.get_date_time_tag()} - Evaluate on out-of-distribution images")
     ood_dataset = fgbg.CleanDataset(
         hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
         json_file=os.path.join(config["ood_directory"], target, "data.json"),
     )
-    fgbg.evaluate_qualitatively_on_dataset(
-        "out-of-distribution", ood_dataset, model, tb_writer
-    )
+    if config["task"] == "pretrain":
+        fgbg.evaluate_qualitatively_on_dataset(
+            "out-of-distribution", ood_dataset, model, tb_writer
+        )
     fgbg.evaluate_quantitatively_on_dataset(
-        "out-of-distribution", ood_dataset, model, tb_writer
+        "out-of-distribution", ood_dataset, model, tb_writer, config["task"]
     )
-
-    print(f"{fgbg.get_date_time_tag()} - Evaluate on real images")
-    real_dataset = fgbg.ImagesDataset(target=target, dir_name=config["real_directory"])
-    fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
 
     print(f"{fgbg.get_date_time_tag()} - Finished")

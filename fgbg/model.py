@@ -206,7 +206,7 @@ class DeepSupervisionNet(nn.Module):
 
 class DownstreamNet(nn.Module):
     def __init__(
-        self, output_size: tuple = (6,), encoder_ckpt_path: str = None,
+        self, output_size: tuple = (6,), encoder_ckpt_dir: str = None
     ):
         super().__init__()
         self.global_step = 0
@@ -216,17 +216,18 @@ class DownstreamNet(nn.Module):
         self.decoder = nn.Sequential(
             OrderedDict(
                 [
-                    "layer_1",
-                    nn.Linear(1024, 512),
-                    "relu_1",
-                    nn.ReLU(),
-                    "layer_2",
-                    nn.Linear(512, self.output_size),
+                    ("layer_1", nn.Linear(1024, 512)),
+                    ("relu_1", nn.ReLU()),
+                    ("layer_2", nn.Linear(512, self.output_size[0])),
                 ]
             )
         )
+        if encoder_ckpt_dir is not None:
+            ckpt = torch.load(encoder_ckpt_dir + '/checkpoint_model.ckpt')
+            self.encoder.load_state_dict(ckpt['state_dict'])
+            print(f'Loaded encoder from {encoder_ckpt_dir}.')
 
-    def forward(self, inputs, intermediate_outputs: bool = False) -> torch.Tensor:
-        features = self.encoder.project(inputs)
-
-        return prediction
+    def forward(self, inputs) -> torch.Tensor:
+        with torch.no_grad():
+            features = self.encoder.project(inputs).squeeze(-1).squeeze(-1)
+        return self.decoder(features)

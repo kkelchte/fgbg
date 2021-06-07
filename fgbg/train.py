@@ -9,7 +9,7 @@ from .utils import get_date_time_tag, get_IoU
 from .losses import WeightedBinaryCrossEntropyLoss
 
 
-def tain_downstream_task(
+def train_downstream_task(
     model,
     train_dataloader,
     val_dataloader,

@@ -3,13 +3,15 @@
     "learning_rate": 0.01,
     "batch_size": 10,
     "number_of_epochs": 1,
+    "task": "waypoints",
+    "encoder_ckpt_dir": "data/dummy_encoder/cone",
     "training_directory": "data/debug_data",
     "ood_directory": "data/gate_cone_line_realistic",
     "real_directory": "data/bebop_real",
     "texture_directory": "data/dtd",
     "augment": 1,
-    "blur": 0,
-    "triplet": 0.05,
+    "blur": 1,
+    "triplet": 0.0,
     "mode": "deep_supervision",
     "batch_normalisation": 0
 }

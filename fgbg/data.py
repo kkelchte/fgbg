@@ -208,7 +208,7 @@ class CleanDataset(TorchDataset):
             "reference": observation,
             "mask": mask,
             "velocities": velocities,
-            "relative_target_location": relative_target_location,
+            "waypoints": relative_target_location,
         }
 
 
