@@ -22,8 +22,7 @@ SPECS = {
     "+RequestWalltime": int(100 * 3 * 60 * 1.3),
 }
 
-# TARGETS = ["cone", "gate", "line"]
-TARGETS = ["line"]
+TARGETS = ["cone", "gate", "line"]
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
@@ -36,7 +35,7 @@ CONFIGS = [
         "deep_supervision_triplet_blur",
     ]
 ]
-LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001, 0.000001]
+LEARNING_RATES = [0.01, 0.0001, 0.000001]
 
 # TARGETS = ["cone"]
 # CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
