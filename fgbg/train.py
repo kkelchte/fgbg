@@ -1,12 +1,87 @@
 import os
 
 import torch
-from torch.nn import TripletMarginLoss
+from torch.nn import TripletMarginLoss, MSELoss
 import numpy as np
 from tqdm import tqdm
 
 from .utils import get_date_time_tag, get_IoU
 from .losses import WeightedBinaryCrossEntropyLoss
+
+
+def tain_downstream_task(
+    model,
+    train_dataloader,
+    val_dataloader,
+    checkpoint_file,
+    tb_writer,
+    task: str = "velocities",
+    num_epochs: int = 40,
+):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    mse_loss = MSELoss()
+    lowest_validation_loss = 100
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
+    if os.path.isfile(checkpoint_file):
+        ckpt = torch.load(checkpoint_file, map_location=device)
+        model.load_state_dict(ckpt["state_dict"])
+        model.global_step = ckpt["global_step"]
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+        lowest_validation_loss = ckpt["lowest_val_loss"]
+        print(
+            f"loaded checkpoint {checkpoint_file}. "
+            f"Starting from {model.global_step}"
+        )
+
+    while model.global_step < num_epochs:
+        losses = {"train": [], "val": []}
+        model.train()
+        for _, data in enumerate(tqdm(train_dataloader)):
+            optimizer.zero_grad()
+            predictions = model(data["reference"].to(device))
+            loss = mse_loss(predictions, data[task].to(device))
+            loss.backward()
+            optimizer.step()
+            losses["train"].append(loss.cpu().detach().item())
+        model.eval()
+        for _, data in enumerate(val_dataloader):
+            predictions = model(data["reference"].to(device))
+            loss = mse_loss(predictions, data[task].to(device))
+            losses["val"].append(loss.cpu().detach().item())
+
+        print(
+            f"{get_date_time_tag()}: epoch {model.global_step} - "
+            f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
+            f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
+        )
+        tb_writer.add_scalar(
+            "train/mse_loss", np.mean(losses["train"]), global_step=model.global_step,
+        )
+        tb_writer.add_scalar(
+            "val/mse_loss", np.mean(losses["val"]), global_step=model.global_step,
+        )
+        model.global_step += 1
+        if lowest_validation_loss > np.mean(losses["val"]):
+            lowest_validation_loss = np.mean(losses["val"])
+            ckpt = {
+                "state_dict": model.state_dict(),
+                "global_step": model.global_step,
+                "optimizer_state_dict": optimizer.state_dict(),
+                "lowest_val_loss": lowest_validation_loss,
+            }
+            torch.save(
+                ckpt, checkpoint_file,
+            )
+            with open(os.path.join(tb_writer.get_logdir(), "results.txt"), "w") as f:
+                f.write(
+                    f"validation_mse_loss_avg: " f"{np.mean(losses['val']):10.3e}\n",
+                )
+                f.write(
+                    f"validation_mse_loss_std: " f"{np.std(losses['val']):10.2e}\n",
+                )
+            print(f"Saved model in {checkpoint_file}.")
+    model.to(torch.device("cpu"))
 
 
 def train_autoencoder(
