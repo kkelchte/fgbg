@@ -108,19 +108,25 @@ def get_binary_mask(image: np.ndarray, gaussian_blur: bool = False) -> np.ndarra
 def create_random_gradient_image(
     size: tuple, low: float = 0.0, high: float = 1.0
 ) -> np.ndarray:
-    color_a = np.random.uniform(low, high)
-    color_b = np.random.uniform(low, high)
+    num_channels = size[2]
+    # select start and end color gradient location
     locations = (np.random.randint(size[0]), np.random.randint(size[0]))
-    while locations[0] == locations[1]:
+    while abs(locations[0] - locations[1]) < 10:
         locations = (np.random.randint(size[0]), np.random.randint(size[0]))
     x1, x2 = min(locations), max(locations)
-    gradient = np.arange(color_a, color_b, ((color_b - color_a) / (x2 - x1)))
-    gradient = gradient[: x2 - x1]
-    assert len(gradient) == x2 - x1, f"failed: {len(gradient)} vs {x2 - x1}"
-    vertical_gradient = np.concatenate(
-        [np.ones(x1) * color_a, gradient, np.ones(size[0] - x2) * color_b]
-    )
-    image = np.stack([vertical_gradient] * size[1], axis=1).reshape(size)
+    # for each channel, select an intensity
+    channels = []
+    for _ in range(num_channels):
+        color_a = np.random.uniform(low, high)
+        color_b = np.random.uniform(low, high)
+        gradient = np.arange(color_a, color_b, ((color_b - color_a) / (x2 - x1)))
+        gradient = gradient[: x2 - x1]
+        assert len(gradient) == x2 - x1, f"failed: {len(gradient)} vs {x2 - x1}"
+        vertical_gradient = np.concatenate(
+            [np.ones(x1) * color_a, gradient, np.ones(size[0] - x2) * color_b]
+        )
+        channels[_] = np.stack([vertical_gradient] * size[1], axis=1)
+    image = np.stack(channels, axis=-1)
     return image
 
 

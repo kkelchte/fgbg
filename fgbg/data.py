@@ -10,7 +10,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset as TorchDataset
 
-from .utils import load_img, combine, generate_random_square
+from .utils import load_img, combine, generate_random_square, create_random_gradient_image
 
 IMAGE_SIZE = (200, 200)
 
@@ -212,10 +212,12 @@ class AugmentedTripletDataset(CleanDataset):
         self,
         hdf5_file: str,
         json_file: str,
+        target: str,
         background_images_directory: str,
         blur: bool = False,
     ):
         super().__init__(hdf5_file, json_file)
+        self.target = target
         self._background_images = (
             [
                 os.path.join(background_images_directory, sub_directory, image)
@@ -242,14 +244,15 @@ class AugmentedTripletDataset(CleanDataset):
             np.asarray(observation), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
         )
 
-        # select foreground color and background map
+        # select foreground color and background map        
+        foreground = create_random_gradient_image(size=observation.shape) if self.target == 'line' else observation
         background_img = load_img(
             np.random.choice(self._background_images), size=observation.shape
         )
 
         # combine both as reference image
         result["reference"] = combine(
-            result["mask"].numpy(), observation, background_img, blur=self._blur
+            result["mask"].numpy(), foreground, background_img, blur=self._blur
         )
         result["observation"] = result["reference"]
         # add different background for positive sample
@@ -258,7 +261,7 @@ class AugmentedTripletDataset(CleanDataset):
         )
         # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
         result["positive"] = combine(
-            result["mask"].numpy(), observation, new_background_img, blur=self._blur
+            result["mask"].numpy(), foreground, new_background_img, blur=self._blur
         )
 
         # get different line with different background for negative sample
@@ -268,14 +271,17 @@ class AugmentedTripletDataset(CleanDataset):
             random_other_index = np.random.randint(0, len(self))
 
         second_hsh, second_sample_index = self.hash_index_tuples[random_other_index]
-        second_observation = np.asarray(
-            self.hdf5_file[second_hsh]["observation"][second_sample_index]
-        )
-        second_observation = cv2.resize(
-            np.asarray(second_observation),
-            dsize=IMAGE_SIZE,
-            interpolation=cv2.INTER_LANCZOS4,
-        )
+        if self.target != 'line':
+            second_foreground = np.asarray(
+                self.hdf5_file[second_hsh]["observation"][second_sample_index]
+            )
+            second_foreground = cv2.resize(
+                np.asarray(second_foreground),
+                dsize=IMAGE_SIZE,
+                interpolation=cv2.INTER_LANCZOS4,
+            )
+        else:
+            second_foreground = create_random_gradient_image(size=IMAGE_SIZE)
         second_mask = np.asarray(
             self.hdf5_file[second_hsh]["mask"][second_sample_index]
         )
@@ -283,7 +289,7 @@ class AugmentedTripletDataset(CleanDataset):
             np.asarray(second_mask), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
         )
         result["negative"] = combine(
-            second_mask, second_observation, background_img, blur=self._blur,
+            second_mask, second_foreground, background_img, blur=self._blur,
         )
         return result
 

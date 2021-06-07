@@ -50,6 +50,7 @@ if __name__ == "__main__":
         dataset = fgbg.AugmentedTripletDataset(
             hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["training_directory"], target, "data.json"),
+            target=target,
             background_images_directory=config["texture_directory"],
             blur=bool(config["blur"]),
         )
