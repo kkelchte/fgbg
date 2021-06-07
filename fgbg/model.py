@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 
-class ResidualBlock(torch.nn.Module):
+class ResidualBlock(nn.Module):
     def __init__(
         self,
         input_channels,
@@ -202,3 +202,28 @@ class DeepSupervisionNet(nn.Module):
     def project(self, inputs) -> torch.Tensor:
         results = self.forward_with_intermediate_outputs(inputs)
         return results["projection"]
+
+
+class DownstreamNet(nn.Module):
+    def __init__(
+        self,
+        batch_norm: bool = False,
+        output_size: tuple = (6,),
+        encoder_ckpt_path: str = None,
+    ):
+        super().__init__()
+        self.global_step = 0
+        self.input_size = (3, 200, 200)
+        self.output_size = output_size
+        self.encoder = DeepSupervisionNet(batch_norm=False)
+        self.decoder = nn.Sequential(
+            OrderedDict(
+                "layer_1", nn.linear(),
+            )
+        )
+
+
+    def forward(self, inputs, intermediate_outputs: bool = False) -> torch.Tensor:
+        features = self.encoder.project(inputs)
+
+        return prediction
