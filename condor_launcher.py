@@ -22,7 +22,8 @@ SPECS = {
     "+RequestWalltime": int(100 * 3 * 60 * 1.3),
 }
 
-TARGETS = ["cone", "gate", "line"]
+# TARGETS = ["cone", "gate", "line"]
+TARGETS = ["line"]
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
@@ -83,7 +84,7 @@ for conf in CONFIGS:
                 subprocess.call(shlex.split(f"condor_submit {filename}"))
                 time.sleep(3)
     # wait 20 minutes
-    if SUBMIT and len(CONFIGS) != 1:
-        time.sleep(10 * 60)
+    #if SUBMIT and len(CONFIGS) != 1:
+    #    time.sleep(10 * 60)
 
 print("finished")
