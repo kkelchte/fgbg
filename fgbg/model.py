@@ -206,10 +206,7 @@ class DeepSupervisionNet(nn.Module):
 
 class DownstreamNet(nn.Module):
     def __init__(
-        self,
-        batch_norm: bool = False,
-        output_size: tuple = (6,),
-        encoder_ckpt_path: str = None,
+        self, output_size: tuple = (6,), encoder_ckpt_path: str = None,
     ):
         super().__init__()
         self.global_step = 0
@@ -218,10 +215,16 @@ class DownstreamNet(nn.Module):
         self.encoder = DeepSupervisionNet(batch_norm=False)
         self.decoder = nn.Sequential(
             OrderedDict(
-                "layer_1", nn.linear(),
+                [
+                    "layer_1",
+                    nn.Linear(1024, 512),
+                    "relu_1",
+                    nn.ReLU(),
+                    "layer_2",
+                    nn.Linear(512, self.output_size),
+                ]
             )
         )
-
 
     def forward(self, inputs, intermediate_outputs: bool = False) -> torch.Tensor:
         features = self.encoder.project(inputs)
