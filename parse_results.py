@@ -81,3 +81,10 @@ for target in TARGETS:
             )
         except FileNotFoundError:
             print(f"Failed to copy from {winning_lrs[target][conf]}")
+
+
+print("Winning models: ")
+for target in TARGETS:
+    for conf in CONFIGS:
+        print(f"{target} - {conf} - {winning_lrs[target][conf]}")
+
