@@ -22,7 +22,8 @@ SPECS = {
     "+RequestWalltime": int(100 * 3 * 60 * 1.3),
 }
 
-TARGETS = ["cone", "gate", "line"]
+#TARGETS = ["cone", "gate", "line"]
+TARGETS = ["gate"]
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [

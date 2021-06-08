@@ -1,5 +1,5 @@
 {
-    "target": "cone",
+    "target": "gate",
     "learning_rate": 0.01,
     "batch_size": 10,
     "number_of_epochs": 1,
