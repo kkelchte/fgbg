@@ -12,6 +12,7 @@ import fgbg
 
 parser = ArgumentParser()
 parser.add_argument("--config_file")
+parser.add_argument("--texture_directory", type=str)
 parser.add_argument("--learning_rate", type=float)
 parser.add_argument("--output_dir", type=str)
 parser.add_argument("--target", type=str)

@@ -7,7 +7,7 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data/places_augmented"
+OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data"
 
 SPECS = {
     "Universe": "vanilla",
@@ -23,11 +23,12 @@ SPECS = {
 }
 
 TARGETS = ["cone", "gate", "line"]
-# TARGETS = ["gate"]
+TASKS = ["waypoints", "velocities"]
+
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        # "vanilla",
+        "vanilla",
         "default",
         "default_triplet",
         "deep_supervision",
