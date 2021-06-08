@@ -72,8 +72,8 @@ def train_autoencoder(
                 get_IoU(
                     autoencoder(
                         data["reference"].to(device), intermediate_outputs=False
-                    ).squeeze(),
-                    data["mask"].to(device).squeeze(),
+                    ),
+                    data["mask"].to(device),
                 )
                 .detach()
                 .cpu()
@@ -87,7 +87,7 @@ def train_autoencoder(
             loss = bce_loss(predictions, data["mask"].to(device))
             losses["val"].append(loss.cpu().detach().item())
             ious["val"].append(
-                get_IoU(predictions.squeeze(), data["mask"].to(device).squeeze())
+                get_IoU(predictions, data["mask"].to(device))
                 .detach()
                 .cpu()
                 .item()
