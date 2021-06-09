@@ -7,7 +7,7 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data/places_augmented"
+OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data/dtd_and_places_augmented"
 
 SPECS = {
     "Universe": "vanilla",
@@ -27,7 +27,7 @@ TARGETS = ["cone", "gate", "line"]
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        # "vanilla",
+        #"vanilla",
         "default",
         "default_triplet",
         "deep_supervision",
@@ -37,6 +37,7 @@ CONFIGS = [
     ]
 ]
 LEARNING_RATES = [0.001, 0.0001, 0.00001]
+TEXTURE_DIR = "data/dtd_and_places"  # "data/places" # "data/dtd"
 
 # TARGETS = ["cone"]
 # CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
@@ -58,11 +59,10 @@ def create_condor_job_file(trgt, config, lrate):
     os.makedirs(output_dir)
     with open(os.path.join(output_dir, "condor.job"), "w") as jobfile:
         jobfile.write(f"executable     = {INTERPRETER_PATH} \n")
-        text_dir = 'data/dtd' if trgt != 'gate' else 'data/places'
         jobfile.write(
             f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
             f"--learning_rate {lrate} --target {trgt} "
-            f"--output_dir {output_dir} --texture_directory {text_dir}\n"
+            f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR}\n"
         )
 
         for key, value in SPECS.items():
