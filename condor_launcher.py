@@ -38,7 +38,7 @@ CONFIGS = [
 LEARNING_RATES = [0.001, 0.0001, 0.00001]
 TEXTURE_DIR = "data/places"  # "data/dtd_and_places"  # "data/places" # "data/dtd"
 
-OUTPUT_PATH = f"/users/visics/kkelchte/code/contrastive-learning/data/{TEXTURE_DIR}_augmented"
+OUTPUT_PATH = f"/users/visics/kkelchte/code/contrastive-learning/data/{os.path.basename(TEXTURE_DIR)}_augmented"
 
 # TARGETS = ["cone"]
 # CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
