@@ -51,12 +51,15 @@ def normalize(d: np.ndarray):
 
 
 def load_img(img_path: str, size: tuple = (128, 128, 3)) -> np.ndarray:
+    assert len(size) == 3
     data = Image.open(img_path, mode="r")
     data = cv2.resize(
         np.asarray(data), dsize=(size[0], size[1]), interpolation=cv2.INTER_LANCZOS4
     )
     if size[-1] == 1:
         data = data.mean(axis=-1, keepdims=True)
+    if len(data.shape) == 2:
+        data = np.stack([data] * size[-1], axis=-1)
     data = np.array(data).astype(np.float32) / 255.0  # uint8 -> float32
     return data
 
