@@ -28,17 +28,18 @@ def test_data_loading_clean():
 
 def test_data_loading_augment():
     dataset = fgbg.AugmentedTripletDataset(
-        hdf5_file="data/gate_cone_line/line/data.hdf5",
-        json_file="data/gate_cone_line/line/data.json",
-        target='line',
-        background_images_directory="data/dtd",
+        hdf5_file="data/gate_cone_line/gate/data.hdf5",
+        json_file="data/gate_cone_line/gate/data.json",
+        target='gate',
+        background_images_directory="data/places"
     )
-    data_item = dataset[0]
+    for _ in range(1000):
+        data_item = dataset[_]
     # for k in data_item.keys():
     #    print(k, data_item[k].shape)
 
-    plt.imshow(data_item["observation"].permute(1, 2, 0).numpy())
-    plt.show()
+    #plt.imshow(data_item["observation"].permute(1, 2, 0).numpy())
+    #plt.show()
 
 
 def test_foreground_map():

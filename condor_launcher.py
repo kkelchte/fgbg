@@ -7,11 +7,10 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data/dtd_and_places_augmented"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")  && (machine != "amalger.esat.kuleuven.be") && (machine != "amethyst.esat.kuleuven.be")',
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")  && (machine != "amalger.esat.kuleuven.be") && (machine != "amethyst.esat.kuleuven.be")',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,
@@ -37,7 +36,9 @@ CONFIGS = [
     ]
 ]
 LEARNING_RATES = [0.001, 0.0001, 0.00001]
-TEXTURE_DIR = "data/dtd_and_places"  # "data/places" # "data/dtd"
+TEXTURE_DIR = "data/dtd_and_places"  # "data/dtd_and_places"  # "data/places" # "data/dtd"
+
+OUTPUT_PATH = f"/users/visics/kkelchte/code/contrastive-learning/data/{os.path.basename(TEXTURE_DIR)}_augmented"
 
 # TARGETS = ["cone"]
 # CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
@@ -83,7 +84,7 @@ for conf in CONFIGS:
             if SUBMIT:
                 print(f"submitting {filename}")
                 subprocess.call(shlex.split(f"condor_submit {filename}"))
-                time.sleep(3)
+                time.sleep(0.1)
     # wait 20 minutes
     # if SUBMIT and len(CONFIGS) != 1:
     #    time.sleep(10 * 60)
