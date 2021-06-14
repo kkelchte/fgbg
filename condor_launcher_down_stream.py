@@ -7,7 +7,7 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "/users/visics/kkelchte/code/contrastive-learning/data"
+OUTPUT_PATH = "data/down_stream"
 
 SPECS = {
     "Universe": "vanilla",
@@ -16,7 +16,7 @@ SPECS = {
     "priority": 1,
     "RequestCpus": 4,
     "Request_GPUs": 1,
-    "RequestMemory": "5 G",
+    "RequestMemory": "10 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
     "+RequestWalltime": int(100 * 3 * 60 * 1.3),
@@ -24,46 +24,39 @@ SPECS = {
 
 TARGETS = ["cone", "gate", "line"]
 TASKS = ["waypoints", "velocities"]
+TEXTURE_DIR = {
+    "cone": "data/dtd_and_places",
+    "gate": "data/dtd",
+    "line": "data/dtd"
+}
+CONFIGS = {
+    "cone": "deep_supervision_blur",
+    "gate": "deep_supervision_triplet",
+    "line": "default"
+}
 
-CONFIGS = [
-    f"configs/{cf}.json"
-    for cf in [
-        "vanilla",
-        "default",
-        "default_triplet",
-        "deep_supervision",
-        "deep_supervision_triplet",
-        "deep_supervision_blur",
-        "deep_supervision_triplet_blur",
-    ]
-]
-LEARNING_RATES = [0.01, 0.0001, 0.000001]
-
-# TARGETS = ["cone"]
-# CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
-# LEARNING_RATES = [0.01]
-
-SUBMIT = True
+LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001, 0.000001]
+SUBMIT = False
 RM_EXIST = True
 
 print("TARGETS: ", TARGETS)
-print("CONFIGS: ", CONFIGS)
+print("TASKS: ", TASKS)
 print("LEARNING_RATES: ", LEARNING_RATES)
 
 
-def create_condor_job_file(trgt, config, lrate):
-    config_tag = os.path.basename(config[:-5])
-    output_dir = f"{OUTPUT_PATH}/{config_tag}/{trgt}/{lrate}"
+def create_condor_job_file(trgt, task, lrate):
+    output_dir = f"{OUTPUT_PATH}/{task}/{trgt}/{lrate}"
     if RM_EXIST and os.path.isdir(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir)
     with open(os.path.join(output_dir, "condor.job"), "w") as jobfile:
         jobfile.write(f"executable     = {INTERPRETER_PATH} \n")
-        text_dir = 'data/dtd' if trgt != 'gate' else 'data/places'
         jobfile.write(
-            f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
+            f"arguments = {PROJECT_PATH}/run.py --config_file "
+            f"{PROJECT_PATH}/configs/{CONFIGS[trgt]}.json "
             f"--learning_rate {lrate} --target {trgt} "
-            f"--output_dir {output_dir} --texture_directory {text_dir}\n"
+            f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
+            f"--encoder_ckpt_dir data/best_encoders/{trgt}\n"
         )
 
         for key, value in SPECS.items():
@@ -77,10 +70,10 @@ def create_condor_job_file(trgt, config, lrate):
     return os.path.join(output_dir, "condor.job")
 
 
-for conf in CONFIGS:
+for task in TASKS:
     for target in TARGETS:
         for lr in LEARNING_RATES:
-            filename = create_condor_job_file(target, conf, lr)
+            filename = create_condor_job_file(target, task, lr)
             if SUBMIT:
                 print(f"submitting {filename}")
                 subprocess.call(shlex.split(f"condor_submit {filename}"))

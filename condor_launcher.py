@@ -16,7 +16,7 @@ SPECS = {
     "priority": 1,
     "RequestCpus": 4,
     "Request_GPUs": 1,
-    "RequestMemory": "5 G",
+    "RequestMemory": "10 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
     "+RequestWalltime": int(100 * 3 * 60 * 1.3),
