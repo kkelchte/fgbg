@@ -11,7 +11,7 @@ OUTPUT_PATH = "data/down_stream"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")',
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,
@@ -31,7 +31,7 @@ TEXTURE_DIR = {
 }
 CONFIGS = {
     "cone": "deep_supervision_blur",
-    "gate": "deep_supervision_triplet",
+    "gate": "deep_supervision_triplet_blur",
     "line": "default"
 }
 
