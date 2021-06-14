@@ -1,3 +1,4 @@
+from genericpath import exists
 import os
 import shutil
 from glob import glob
@@ -23,11 +24,11 @@ CONFIGS = [
     "deep_supervision_triplet_blur",
 ]
 output_dir = f"data/overview_{os.path.basename(data_dir)}"
-
+os.makedirs(output_dir, exist_ok=True)
 
 print("TARGETS: ", TARGETS)
 print("CONFIGS: ", CONFIGS)
-
+print("OUTPUTDIR: ", output_dir)
 
 def get_results_from_txt(filename) -> dict:
     try:
@@ -48,6 +49,9 @@ for target in TARGETS:
     for conf in CONFIGS:
         print(f"Parsing config: {conf}")
         lr_paths = glob(f"{os.path.join(data_dir, conf, target)}/*")
+        lr_paths = [
+            p for p in lr_paths if os.path.exists(os.path.join(p, "results.txt"))
+        ]
         values = {
             lrp: get_results_from_txt(os.path.join(lrp, "results.txt"))
             for lrp in lr_paths
@@ -73,9 +77,7 @@ if WRITE_TABLE:
                 msg += (
                     f'{overview_results[target][conf]["out-of-distribution_ious_avg"]} '
                 )
-                msg += (
-                    f'(±{overview_results[target][conf]["out-of-distribution_ious_std"]})'
-                )
+                msg += f'(±{overview_results[target][conf]["out-of-distribution_ious_std"]})'
                 msg += " \\\\"
                 print(msg)
                 overview_file.write(msg + "\n")
@@ -85,7 +87,6 @@ if WRITE_TABLE:
 
 # Copy winning real images for quantitative results
 if COPY_REAL_IMGS:
-    os.makedirs(output_dir, exist_ok=False)
     for target in TARGETS:
         for conf in CONFIGS:
             try:
