@@ -36,7 +36,7 @@ CONFIGS = {
 }
 
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001, 0.000001]
-SUBMIT = False
+SUBMIT = True
 RM_EXIST = True
 
 print("TARGETS: ", TARGETS)
@@ -56,7 +56,8 @@ def create_condor_job_file(trgt, task, lrate):
             f"{PROJECT_PATH}/configs/{CONFIGS[trgt]}.json "
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
-            f"--encoder_ckpt_dir data/best_encoders/{trgt}\n"
+            f"--encoder_ckpt_dir data/best_encoders/{trgt} "
+            f"--task {task}\n"
         )
 
         for key, value in SPECS.items():
