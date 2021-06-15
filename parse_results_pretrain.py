@@ -1,4 +1,3 @@
-from genericpath import exists
 import os
 import shutil
 from glob import glob
@@ -29,6 +28,7 @@ os.makedirs(output_dir, exist_ok=True)
 print("TARGETS: ", TARGETS)
 print("CONFIGS: ", CONFIGS)
 print("OUTPUTDIR: ", output_dir)
+
 
 def get_results_from_txt(filename) -> dict:
     try:
@@ -102,7 +102,8 @@ if WRITE_WINNING_MODELS:
     for target in TARGETS:
         for conf in CONFIGS:
             msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
-            output_file.write(msg)
+            output_file.write(msg + "\n")
             print(msg)
+    output_file.close()
 
 print("finished")
