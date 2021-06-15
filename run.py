@@ -20,6 +20,7 @@ parser.add_argument("--target", type=str)
 parser.add_argument("--encoder_ckpt_dir", type=str)
 parser.add_argument("--evaluate", type=bool, default=False)
 parser.add_argument("--rm", type=bool, default=False)
+parser.add_argument("--end_to_end", type=bool, default=False)
 config = vars(parser.parse_args())
 if config["config_file"] is not None:
     with open(config["config_file"], "r") as f:
@@ -46,11 +47,11 @@ if __name__ == "__main__":
         model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
     elif config["task"] == "velocities":
         model = fgbg.DownstreamNet(
-            output_size=(4,), encoder_ckpt_dir=config["encoder_ckpt_dir"]
+            output_size=(4,), encoder_ckpt_dir=config["encoder_ckpt_dir"], end_to_end=config["end_to_end"]
         )
     elif config["task"] == "waypoints":
         model = fgbg.DownstreamNet(
-            output_size=(3,), encoder_ckpt_dir=config["encoder_ckpt_dir"]
+            output_size=(3,), encoder_ckpt_dir=config["encoder_ckpt_dir"], end_to_end=config["end_to_end"]
         )
 
     print(f"{fgbg.get_date_time_tag()} - Generate dataset")
@@ -103,7 +104,7 @@ if __name__ == "__main__":
                 checkpoint_file,
                 tb_writer,
                 task=config["task"],
-                num_epochs=config["number_of_epochs"],
+                num_epochs=config["number_of_epochs"]
             )
     # set weights to best validation checkpoint
     ckpt = torch.load(checkpoint_file, map_location=torch.device("cpu"))

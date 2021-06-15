@@ -7,7 +7,7 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "data/down_stream"
+OUTPUT_PATH = "data/down_stream_end2end"
 
 SPECS = {
     "Universe": "vanilla",
@@ -24,6 +24,7 @@ SPECS = {
 
 TARGETS = ["cone", "gate", "line"]
 TASKS = ["waypoints", "velocities"]
+END2END = True
 TEXTURE_DIR = {
     "cone": "data/dtd_and_places",
     "gate": "data/dtd",
@@ -57,7 +58,7 @@ def create_condor_job_file(trgt, task, lrate):
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
             f"--encoder_ckpt_dir data/best_encoders/{trgt} "
-            f"--task {task}\n"
+            f"--task {task} --end_to_end {END2END}\n"
         )
 
         for key, value in SPECS.items():
