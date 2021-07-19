@@ -7,7 +7,7 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "data/down_stream_end2end"
+OUTPUT_PATH = "data/down_stream_notE2E"
 
 SPECS = {
     "Universe": "vanilla",
@@ -22,9 +22,10 @@ SPECS = {
     "+RequestWalltime": int(100 * 3 * 60 * 1.3),
 }
 
-TARGETS = ["cone", "gate", "line"]
+#TARGETS = ["cone", "gate", "line"]
+TARGETS = ["cone", "line"]
 TASKS = ["waypoints", "velocities"]
-END2END = True
+END2END = False
 TEXTURE_DIR = {
     "cone": "data/dtd_and_places",
     "gate": "data/dtd",
