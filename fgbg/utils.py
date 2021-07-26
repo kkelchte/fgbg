@@ -1,10 +1,12 @@
 from datetime import datetime
+import os
 
 import cv2
 from PIL import Image
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def get_IoU(predictions, labels):
@@ -135,3 +137,35 @@ def create_random_gradient_image(
 
 def get_date_time_tag() -> str:
     return str(datetime.strftime(datetime.now(), format="%y-%m-%d_%H-%M-%S"))
+
+
+def draw_trajectory(filename, goal: list, trajectory: list) -> None:
+    """
+    filename: path to jpg file 
+    goal: list of 3 coordinates of goal
+    trajectory: list of lists with drone coordinates
+    """
+    three_d = True
+    fig = plt.figure(figsize=(10, 10))
+    if three_d:
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(trajectory[0][0], trajectory[0][1], trajectory[0][2], s=200, color='green', marker='v', label='Start')
+        ax.scatter(goal[0], goal[1], goal[2], s=100, color='red', marker='X', label='Goal')
+        ax.scatter([_[0] for _ in trajectory[1:]],
+                  [_[1] for _ in trajectory[1:]],
+                  [_[2] for _ in trajectory[1:]], s=20, color='blue', marker='o', label='Path')
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        ax.legend()
+    else:
+        plt.scatter(trajectory[0][0], trajectory[0][1], s=200, color='green', marker='v', label='Start')
+        plt.scatter(goal[0], goal[1], s=100, color='red', marker='X', label='Goal')
+        plt.scatter([_[0] for _ in trajectory[1:]],
+                  [_[1] for _ in trajectory[1:]], s=20, color='blue', marker='o', label='Path')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+
+    plt.savefig(os.path.join(filename))
+    plt.clf()
