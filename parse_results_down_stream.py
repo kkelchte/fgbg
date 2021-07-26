@@ -1,18 +1,18 @@
 import os
 from glob import glob
 
-# data_dir = "data"
-data_dir = (
-    "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/down_stream_notE2E"
-)
+data_dir = "data/down_stream"
+# data_dir = (
+#     "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/down_stream"
+# )
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
 TARGETS = ["cone", "line", "gate"]
-WRITE_WINNING_MODELS = True
+LINK_BEST_MODELS = True
 WRITE_TABLE = True
 TASKS = ["velocities", "waypoints"]
 
-output_dir = f"data/overview_{os.path.basename(data_dir)}"
+output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
 
 print("TARGETS: ", TARGETS)
@@ -56,6 +56,7 @@ for target in TARGETS:
         winning_lrs[target][tsk] = best_lrp
 
 if WRITE_TABLE:
+    print("WRITE_TABLE")
     # Print table and store to file:
     overview_file = open(output_dir + "/overview_table.txt", "w")
     for target in TARGETS:
@@ -67,14 +68,14 @@ if WRITE_TABLE:
         for conf in TASKS:
             try:
                 msg = f'{os.path.basename(conf).replace("_", " ")} '
-                msg += f'&  {overview_results[target][conf]["validation_mse_loss_avg"]} '
-                msg += f'(±{overview_results[target][conf]["validation_mse_loss_std"]}) & '
                 msg += (
-                    f'{overview_results[target][conf]["out-of-distribution_mse_loss_avg"]} '
+                    f'&  {overview_results[target][conf]["validation_mse_loss_avg"]} '
                 )
                 msg += (
-                    f'(±{overview_results[target][conf]["out-of-distribution_mse_loss_std"]})'
+                    f'(±{overview_results[target][conf]["validation_mse_loss_std"]}) & '
                 )
+                msg += f'{overview_results[target][conf]["out-of-distribution_mse_loss_avg"]} '
+                msg += f'(±{overview_results[target][conf]["out-of-distribution_mse_loss_std"]})'
                 msg += " \\\\"
                 print(msg)
                 overview_file.write(msg + "\n")
@@ -82,13 +83,13 @@ if WRITE_TABLE:
                 print(f"Failed to parse {conf}/{target}")
     overview_file.close()
 
-if WRITE_WINNING_MODELS:
-    output_file = open(output_dir + "/winning_models.txt", "w")
+if LINK_BEST_MODELS:
+    print("LINK_BEST_MODELS")
     for target in TARGETS:
         for conf in TASKS:
-            msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
-            output_file.write(msg + "\n")
+            # create symbolic link "best" pointing to best learning rate
+            os.system(f"ln -s {winning_lrs[target][tsk]} best")
+            msg = f"{target} - {conf} - {winning_lrs[target][tsk]}"
             print(msg)
-    output_file.close()
 
 print("finished")

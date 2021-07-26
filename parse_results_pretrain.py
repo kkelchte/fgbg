@@ -10,7 +10,7 @@ data_dir = "data/not_augmented"
 
 TARGETS = ["cone", "gate", "line"]
 COPY_REAL_IMGS = False
-WRITE_WINNING_MODELS = True
+LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
@@ -66,6 +66,7 @@ for target in TARGETS:
         winning_lrs[target][conf] = best_lrp
 
 if WRITE_TABLE:
+    print("WRITE_TABLE")
     # Print table and store to file:
     overview_file = open(output_dir + "/overview_table.txt", "w")
     for target in ["cone", "gate", "line"]:
@@ -87,6 +88,7 @@ if WRITE_TABLE:
 
 # Copy winning real images for quantitative results
 if COPY_REAL_IMGS:
+    print("COPY_REAL_IMGS")
     for target in TARGETS:
         for conf in CONFIGS:
             try:
@@ -97,11 +99,12 @@ if COPY_REAL_IMGS:
             except FileNotFoundError:
                 print(f"Failed to copy from {winning_lrs[target][conf]}")
 
-if WRITE_WINNING_MODELS:
+if LINK_BEST_MODELS:
+    print("LINK_BEST_MODELS")
     for target in TARGETS:
         for conf in CONFIGS:
             # create symbolic link "best" pointing to best learning rate
             os.system(f"ln -s {winning_lrs[target][conf]} best")
             msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
-
+            print(msg)
 print("finished")

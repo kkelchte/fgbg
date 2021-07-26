@@ -7,11 +7,11 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "data/down_stream_notE2E"
+OUTPUT_PATH = "data/down_stream"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")',
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6)',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,
@@ -22,22 +22,26 @@ SPECS = {
     "+RequestWalltime": int(100 * 3 * 60 * 1.3),
 }
 
-#TARGETS = ["cone", "gate", "line"]
-TARGETS = ["cone", "line"]
+TARGETS = ["cone", "gate", "line"]
 TASKS = ["waypoints", "velocities"]
 END2END = False
 TEXTURE_DIR = {
-    "cone": "data/dtd_and_places",
-    "gate": "data/dtd",
-    "line": "data/dtd"
+    "cone": "data/datasets/dtd",
+    "gate": "data/datasets/dtd",
+    "line": "data/datasets/dtd"
 }
 CONFIGS = {
-    "cone": "deep_supervision_blur",
-    "gate": "deep_supervision_triplet_blur",
-    "line": "default"
+    "cone": "vanilla",
+    "gate": "vanilla",
+    "line": "vanilla"
+}
+ENCODERS = {
+    "cone": "not_augmented/cone/best",
+    "gate": "not_augmented/gate/best",
+    "line": "not_augmented/line/best"
 }
 
-LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001, 0.000001]
+LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 SUBMIT = True
 RM_EXIST = True
 
@@ -58,7 +62,7 @@ def create_condor_job_file(trgt, task, lrate):
             f"{PROJECT_PATH}/configs/{CONFIGS[trgt]}.json "
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
-            f"--encoder_ckpt_dir data/best_encoders/{trgt} "
+            f"--encoder_ckpt_dir {ENCODERS[trgt]} "
             f"--task {task} --end_to_end {END2END}\n"
         )
 
