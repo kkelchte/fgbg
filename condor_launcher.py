@@ -10,7 +10,7 @@ PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")  && (machine != "amalger.esat.kuleuven.be") && (machine != "amethyst.esat.kuleuven.be")',
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6)',  #  && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")  && (machine != "amalger.esat.kuleuven.be") && (machine != "amethyst.esat.kuleuven.be")
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,

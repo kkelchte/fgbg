@@ -2,27 +2,27 @@ import os
 import shutil
 from glob import glob
 
-# data_dir = "data"
-data_dir = (
-    "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/places_augmented"
-)
+data_dir = "data/not_augmented"
+# data_dir = (
+#     "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/places_augmented"
+# )
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
 TARGETS = ["cone", "gate", "line"]
-COPY_REAL_IMGS = True
+COPY_REAL_IMGS = False
 WRITE_WINNING_MODELS = True
 WRITE_TABLE = True
 
-# "vanilla",
 CONFIGS = [
-    "default",
-    "default_triplet",
-    "deep_supervision",
-    "deep_supervision_triplet",
-    "deep_supervision_blur",
-    "deep_supervision_triplet_blur",
+    "vanilla",
+    # "default",
+    # "default_triplet",
+    # "deep_supervision",
+    # "deep_supervision_triplet",
+    # "deep_supervision_blur",
+    # "deep_supervision_triplet_blur",
 ]
-output_dir = f"data/overview_{os.path.basename(data_dir)}"
+output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
 
 print("TARGETS: ", TARGETS)
@@ -98,12 +98,10 @@ if COPY_REAL_IMGS:
                 print(f"Failed to copy from {winning_lrs[target][conf]}")
 
 if WRITE_WINNING_MODELS:
-    output_file = open(output_dir + "/winning_models.txt", "w")
     for target in TARGETS:
         for conf in CONFIGS:
+            # create symbolic link "best" pointing to best learning rate
+            os.system(f"ln -s {winning_lrs[target][conf]} best")
             msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
-            output_file.write(msg + "\n")
-            print(msg)
-    output_file.close()
 
 print("finished")
