@@ -3,11 +3,11 @@ from glob import glob
 
 # data_dir = "data"
 data_dir = (
-    "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/down_stream"
+    "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/down_stream_notE2E"
 )
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
-TARGETS = ["cone", "gate", "line"]
+TARGETS = ["cone", "line", "gate"]
 WRITE_WINNING_MODELS = True
 WRITE_TABLE = True
 TASKS = ["velocities", "waypoints"]
@@ -58,7 +58,7 @@ for target in TARGETS:
 if WRITE_TABLE:
     # Print table and store to file:
     overview_file = open(output_dir + "/overview_table.txt", "w")
-    for target in ["cone", "gate", "line"]:
+    for target in TARGETS:
         msg = f"{target} && \\\\"
         print(msg)
         overview_file.write("\\hline\n")
