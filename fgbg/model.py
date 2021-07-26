@@ -206,13 +206,13 @@ class DeepSupervisionNet(nn.Module):
 
 class DownstreamNet(nn.Module):
     def __init__(
-        self, output_size: tuple = (6,), encoder_ckpt_dir: str = None, end_to_end: bool = False
+        self, output_size: tuple = (6,), encoder_ckpt_dir: str = None, end_to_end: bool = False, batch_norm: bool = False
     ):
         super().__init__()
         self.global_step = 0
         self.input_size = (3, 200, 200)
         self.output_size = output_size
-        self.encoder = DeepSupervisionNet(batch_norm=False)
+        self.encoder = DeepSupervisionNet(batch_norm=batch_norm)
         self.end_to_end = end_to_end
         self.decoder = nn.Sequential(
             OrderedDict(

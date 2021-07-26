@@ -47,11 +47,17 @@ if __name__ == "__main__":
         model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
     elif config["task"] == "velocities":
         model = fgbg.DownstreamNet(
-            output_size=(4,), encoder_ckpt_dir=config["encoder_ckpt_dir"], end_to_end=config["end_to_end"]
+            output_size=(4,),
+            encoder_ckpt_dir=config["encoder_ckpt_dir"],
+            end_to_end=config["end_to_end"],
+            batch_norm=config["batch_normalisation"],
         )
     elif config["task"] == "waypoints":
         model = fgbg.DownstreamNet(
-            output_size=(3,), encoder_ckpt_dir=config["encoder_ckpt_dir"], end_to_end=config["end_to_end"]
+            output_size=(3,),
+            encoder_ckpt_dir=config["encoder_ckpt_dir"],
+            end_to_end=config["end_to_end"],
+            batch_norm=config["batch_normalisation"],
         )
 
     print(f"{fgbg.get_date_time_tag()} - Generate dataset")
@@ -95,6 +101,7 @@ if __name__ == "__main__":
                 tb_writer,
                 triplet_loss_weight=config["triplet"],
                 num_epochs=config["number_of_epochs"],
+                learning_rate=config["learning_rate"],
             )
         else:
             fgbg.train_downstream_task(
@@ -104,7 +111,8 @@ if __name__ == "__main__":
                 checkpoint_file,
                 tb_writer,
                 task=config["task"],
-                num_epochs=config["number_of_epochs"]
+                num_epochs=config["number_of_epochs"],
+                learning_rate=config["learning_rate"],
             )
     # set weights to best validation checkpoint
     ckpt = torch.load(checkpoint_file, map_location=torch.device("cpu"))

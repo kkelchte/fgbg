@@ -22,27 +22,23 @@ SPECS = {
 }
 
 TARGETS = ["cone", "gate", "line"]
-# TARGETS = ["gate"]
+
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        #"vanilla",
-        "default",
-        "default_triplet",
-        "deep_supervision",
-        "deep_supervision_triplet",
-        "deep_supervision_blur",
-        "deep_supervision_triplet_blur",
+        "vanilla",
+        #"default",
+        #"default_triplet",
+        #"deep_supervision",
+        #"deep_supervision_triplet",
+        #"deep_supervision_blur",
+        #"deep_supervision_triplet_blur",
     ]
 ]
-LEARNING_RATES = [0.001, 0.0001, 0.00001]
-TEXTURE_DIR = "data/dtd_and_places"  # "data/dtd_and_places"  # "data/places" # "data/dtd"
+LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
+TEXTURE_DIR = "not"  # "data/textures/dtd_and_places"  # "data/textures/places" # "data/textures/dtd"
 OUTPUT_PATH = f"/users/visics/kkelchte/code/contrastive-learning/data/{os.path.basename(TEXTURE_DIR)}_augmented"
-
-# TARGETS = ["cone"]
-# CONFIGS = [f"configs/{cf}.json" for cf in ["baseline"]]
-# LEARNING_RATES = [0.01]
 
 SUBMIT = True
 RM_EXIST = True

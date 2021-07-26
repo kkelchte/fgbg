@@ -17,12 +17,14 @@ def train_downstream_task(
     tb_writer,
     task: str = "velocities",
     num_epochs: int = 40,
+    learning_rate: float = 0.001
+
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     mse_loss = MSELoss()
     lowest_validation_loss = 100
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.0001)
     if os.path.isfile(checkpoint_file):
         ckpt = torch.load(checkpoint_file, map_location=device)
         model.load_state_dict(ckpt["state_dict"])
@@ -93,6 +95,7 @@ def train_autoencoder(
     triplet_loss_weight: float = 0.0,
     num_epochs: int = 40,
     deep_supervision: bool = False,
+    learning_rate: float = 0.01
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
@@ -101,7 +104,7 @@ def train_autoencoder(
         trplt_loss = TripletMarginLoss(swap=True).to(device)
     lowest_validation_loss = 100
     optimizer = torch.optim.Adam(
-        autoencoder.parameters(), lr=0.001, weight_decay=0.0001
+        autoencoder.parameters(), lr=learning_rate, weight_decay=0.0001
     )
     if os.path.isfile(checkpoint_file):
         ckpt = torch.load(checkpoint_file, map_location=device)
@@ -217,93 +220,3 @@ def train_autoencoder(
                 f.write(f"validation_iou_std: " f"{np.std(ious['val']):10.2e}\n",)
             print(f"Saved model in {checkpoint_file}.")
     autoencoder.to(torch.device("cpu"))
-
-
-def train_encoder_with_triplet_loss(
-    encoder, train_dataloader, val_dataloader, checkpoint_file, tb_writer
-):
-    triplet_loss = TripletMarginLoss(swap=True)
-    for p in encoder.parameters():
-        p.requires_grad = True
-    lowest_validation_loss = 100
-    optimizer = torch.optim.Adam(encoder.parameters(), lr=0.001, weight_decay=0.0001)
-    for epoch in range(20):
-        losses = {"train": [], "val": []}
-        encoder.train()
-        for batch_idx, data in enumerate(tqdm(train_dataloader)):
-            optimizer.zero_grad()
-            anchor = encoder(data["reference"])
-            positive = encoder(data["positive"])
-            negative = encoder(data["negative"])
-            loss = triplet_loss(anchor, positive, negative)
-            loss.backward()
-            optimizer.step()
-            losses["train"].append(loss.cpu().detach().item())
-        encoder.eval()
-        for batch_idx, data in enumerate(tqdm(val_dataloader)):
-            anchor = encoder(data["reference"])
-            positive = encoder(data["positive"])
-            negative = encoder(data["negative"])
-            loss = triplet_loss(anchor, positive, negative)
-            losses["val"].append(loss.cpu().detach().item())
-        print(
-            f"{get_date_time_tag()}: encoder epoch {epoch} - "
-            f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
-            f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
-        )
-        tb_writer.add_scalar(
-            "train/triplet_loss/encoder", np.mean(losses["train"]), global_step=epoch
-        )
-        tb_writer.add_scalar(
-            "val/triplet_loss/encoder", np.mean(losses["val"]), global_step=epoch
-        )
-
-        if lowest_validation_loss > np.mean(losses["val"]):
-            print(f"Saving model in {checkpoint_file}")
-            torch.save(
-                encoder.state_dict(), checkpoint_file,
-            )
-            lowest_validation_loss = np.mean(losses["val"])
-
-
-def train_decoder_with_frozen_encoder(
-    encoder, decoder, train_dataloader, val_dataloader, checkpoint_file, tb_writer
-):
-    bce_loss = WeightedBinaryCrossEntropyLoss(beta=0.9)
-    encoder.eval()
-    for p in encoder.parameters():
-        p.requires_grad = False
-    lowest_validation_loss = 100
-    optimizer = torch.optim.Adam(decoder.parameters(), lr=0.001, weight_decay=0.0001)
-    for epoch in range(20):
-        losses = {"train": [], "val": []}
-        decoder.train()
-        for batch_idx, data in enumerate(tqdm(train_dataloader)):
-            optimizer.zero_grad()
-            projection = encoder(data["reference"])
-            loss = bce_loss(decoder(projection), data["target"])
-            loss.backward()
-            optimizer.step()
-            losses["train"].append(loss.cpu().detach().item())
-        decoder.eval()
-        for batch_idx, data in enumerate(tqdm(val_dataloader)):
-            projection = encoder(data["reference"])
-            loss = bce_loss(decoder(projection), data["target"])
-            losses["val"].append(loss.cpu().detach().item())
-        print(
-            f"{get_date_time_tag()}: decoder epoch {epoch} - "
-            f"train {np.mean(losses['train']): 0.3f} [{np.std(losses['train']): 0.2f}]"
-            f" - val {np.mean(losses['val']): 0.3f} [{np.std(losses['val']): 0.2f}]"
-        )
-        tb_writer.add_scalar(
-            "train/bce_loss/decoder", np.mean(losses["train"]), global_step=epoch
-        )
-        tb_writer.add_scalar(
-            "val/bce_loss/decoder", np.mean(losses["val"]), global_step=epoch
-        )
-        if lowest_validation_loss > np.mean(losses["val"]):
-            print(f"Saving model in {checkpoint_file}")
-            torch.save(
-                decoder.state_dict(), checkpoint_file,
-            )
-            lowest_validation_loss = np.mean(losses["val"])
