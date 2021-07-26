@@ -3,8 +3,8 @@
     "learning_rate": 0.01,
     "batch_size": 10,
     "number_of_epochs": 1,
-    "task": "pretrain",
-    "encoder_ckpt_dir": "data/dummy_encoder/cone",
+    "task": "waypoints",
+    "encoder_ckpt_dir": "data/best_encoders/cone",
     "training_directory": "data/gate_cone_line",
     "ood_directory": "data/gate_cone_line_realistic",
     "real_directory": "data/bebop_real",
@@ -13,5 +13,6 @@
     "blur": 1,
     "triplet": 0.0,
     "mode": "deep_supervision",
-    "batch_normalisation": 0
+    "batch_normalisation": 0,
+    "end_to_end": 0
 }

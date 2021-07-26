@@ -12,5 +12,6 @@
     "blur": 0,
     "triplet": 0,
     "mode": "deep_supervision",
-    "batch_normalisation": 0
+    "batch_normalisation": 0,
+    "end_to_end": 0
 }

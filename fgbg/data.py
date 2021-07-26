@@ -220,6 +220,7 @@ class AugmentedTripletDataset(CleanDataset):
         target: str,
         background_images_directory: str,
         blur: bool = False,
+        augment_fg: bool = False
     ):
         super().__init__(hdf5_file, json_file)
         self.target = target
@@ -239,6 +240,7 @@ class AugmentedTripletDataset(CleanDataset):
             else []
         )
         self._blur = blur
+        self._augment_fg = augment_fg
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
         hsh, sample_index = self.hash_index_tuples[index]
@@ -252,7 +254,7 @@ class AugmentedTripletDataset(CleanDataset):
         # select foreground color and background map
         foreground = (
             create_random_gradient_image(size=observation.shape)
-            if self.target == "line"
+            if self._augment_fg
             else observation
         )
         background_img = load_img(
