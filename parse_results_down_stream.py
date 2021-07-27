@@ -87,8 +87,12 @@ if LINK_BEST_MODELS:
     print("LINK_BEST_MODELS")
     for target in TARGETS:
         for conf in TASKS:
+            if os.path.exists(f"{os.path.dirname(winning_lrs[target][tsk])}/best"):
+                os.system(f"rm {os.path.dirname(winning_lrs[target][tsk])}/best")
             # create symbolic link "best" pointing to best learning rate
-            os.system(f"ln -s {winning_lrs[target][tsk]} best")
+            os.system(
+                f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][tsk])}/best"
+            )
             msg = f"{target} - {conf} - {winning_lrs[target][tsk]}"
             print(msg)
 
