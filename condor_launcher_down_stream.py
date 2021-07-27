@@ -11,7 +11,7 @@ OUTPUT_PATH = "data/down_stream"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6)',
+    "Requirements": "(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6)",
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,
@@ -28,17 +28,13 @@ END2END = False
 TEXTURE_DIR = {
     "cone": "data/datasets/dtd",
     "gate": "data/datasets/dtd",
-    "line": "data/datasets/dtd"
+    "line": "data/datasets/dtd",
 }
-CONFIGS = {
-    "cone": "vanilla",
-    "gate": "vanilla",
-    "line": "vanilla"
-}
+CONFIGS = {"cone": "vanilla", "gate": "vanilla", "line": "vanilla"}
 ENCODERS = {
-    "cone": "not_augmented/cone/best",
-    "gate": "not_augmented/gate/best",
-    "line": "not_augmented/line/best"
+    "cone": "data/not_augmented/vanilla/cone/best",
+    "gate": "data/not_augmented/vanilla/gate/best",
+    "line": "data/not_augmented/vanilla/line/best",
 }
 
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]

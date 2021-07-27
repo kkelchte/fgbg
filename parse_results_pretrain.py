@@ -9,7 +9,7 @@ data_dir = "data/not_augmented"
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
 TARGETS = ["cone", "gate", "line"]
-COPY_REAL_IMGS = False
+COPY_REAL_IMGS = True
 LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
@@ -104,7 +104,9 @@ if LINK_BEST_MODELS:
     for target in TARGETS:
         for conf in CONFIGS:
             # create symbolic link "best" pointing to best learning rate
-            os.system(f"ln -s {winning_lrs[target][conf]} best")
+            os.system(
+                f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
+            )
             msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
             print(msg)
 print("finished")
