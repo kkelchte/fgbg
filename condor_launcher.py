@@ -37,7 +37,7 @@ CONFIGS = [
 ]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
-TEXTURE_DIR = "data/datasets/dtd"  # "not"  # "data/datasets/dtd_and_places"  # "data/datasets/places" # "data/datasets/dtd"
+TEXTURE_DIR = "data/datasets/dtd_and_places"  # "not"  # "data/datasets/dtd_and_places"  # "data/datasets/places" # "data/datasets/dtd"
 OUTPUT_PATH = f"/users/visics/kkelchte/code/contrastive-learning/data/{os.path.basename(TEXTURE_DIR)}_augmented"
 
 SUBMIT = True

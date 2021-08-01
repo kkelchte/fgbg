@@ -30,11 +30,15 @@ TEXTURE_DIR = {
     "gate": "data/datasets/dtd",
     "line": "data/datasets/dtd",
 }
-CONFIGS = {"cone": "vanilla", "gate": "vanilla", "line": "vanilla"}
+CONFIGS = {
+    "cone": "deep_supervision_triplet", 
+    "gate": "deep_supervision_blur", 
+    "line": "deep_supervision_triplet_blur"
+}
 ENCODERS = {
-    "cone": "data/not_augmented/vanilla/cone/best",
-    "gate": "data/not_augmented/vanilla/gate/best",
-    "line": "data/not_augmented/vanilla/line/best",
+    "cone": "data/dtd_augmented/deep_supervision_triplet/cone/best",
+    "gate": "data/dtd_augmented/deep_supervision_blur/gate/best",
+    "line": "data/dtd_augmented/deep_supervision_triplet_blur/line/best",
 }
 
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]

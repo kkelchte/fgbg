@@ -2,7 +2,7 @@ import os
 import shutil
 from glob import glob
 
-data_dir = "data/not_augmented"
+data_dir = "data/dtd_augmented"
 # data_dir = (
 #     "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/places_augmented"
 # )
@@ -14,13 +14,13 @@ LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
-    "vanilla",
-    # "default",
-    # "default_triplet",
-    # "deep_supervision",
-    # "deep_supervision_triplet",
-    # "deep_supervision_blur",
-    # "deep_supervision_triplet_blur",
+    # "vanilla",
+    "default",
+    "default_triplet",
+    "deep_supervision",
+    "deep_supervision_triplet",
+    "deep_supervision_blur",
+    "deep_supervision_triplet_blur",
 ]
 output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
