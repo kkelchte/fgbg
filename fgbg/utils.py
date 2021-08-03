@@ -7,6 +7,11 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import imageio
+
+
+def create_trajectory_gif(filename: str, data: list):
+    imageio.mimsave(filename, data)
 
 
 def get_IoU(predictions, labels):
