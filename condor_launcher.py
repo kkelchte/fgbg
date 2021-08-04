@@ -49,7 +49,7 @@ print("LEARNING_RATES: ", LEARNING_RATES)
 
 def create_condor_job_file(trgt, config, lrate):
     config_tag = os.path.basename(config[:-5])
-    output_dir = f"{OUTPUT_PATH}/{config_tag}/{trgt}/{lrate}"
+    output_dir = f"{OUTPUT_PATH}/pretrain/{config_tag}/{trgt}/{lrate}"
     if RM_EXIST and os.path.isdir(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir)

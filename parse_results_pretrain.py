@@ -48,7 +48,7 @@ for target in TARGETS:
     print(f"Parsing target: {target}")
     for conf in CONFIGS:
         print(f"Parsing config: {conf}")
-        lr_paths = glob(f"{os.path.join(data_dir, conf, target)}/*")
+        lr_paths = glob(f"{os.path.join(data_dir, 'pretrain',conf, target)}/*")
         lr_paths = [
             p for p in lr_paths if os.path.exists(os.path.join(p, "results.txt"))
         ]
@@ -68,7 +68,7 @@ for target in TARGETS:
 if WRITE_TABLE:
     print("WRITE_TABLE")
     # Print table and store to file:
-    overview_file = open(output_dir + "/overview_table.txt", "w")
+    overview_file = open(output_dir + "/overview_table_pretrain.txt", "w")
     for target in ["cone", "gate", "line"]:
         for conf in CONFIGS:
             try:
