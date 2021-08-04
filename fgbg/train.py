@@ -17,14 +17,15 @@ def train_downstream_task(
     tb_writer,
     task: str = "velocities",
     num_epochs: int = 40,
-    learning_rate: float = 0.001
-
+    learning_rate: float = 0.001,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     mse_loss = MSELoss()
     lowest_validation_loss = 100
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.0001)
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=learning_rate, weight_decay=0.0001
+    )
     if os.path.isfile(checkpoint_file):
         ckpt = torch.load(checkpoint_file, map_location=device)
         model.load_state_dict(ckpt["state_dict"])
@@ -95,7 +96,7 @@ def train_autoencoder(
     triplet_loss_weight: float = 0.0,
     num_epochs: int = 40,
     deep_supervision: bool = False,
-    learning_rate: float = 0.01
+    learning_rate: float = 0.01,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
@@ -165,10 +166,7 @@ def train_autoencoder(
             loss = bce_loss(predictions, data["mask"].to(device))
             losses["val"].append(loss.cpu().detach().item())
             ious["val"].append(
-                get_IoU(predictions, data["mask"].to(device))
-                .detach()
-                .cpu()
-                .item()
+                get_IoU(predictions, data["mask"].to(device)).detach().cpu().item()
             )
 
         print(

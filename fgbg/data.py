@@ -9,12 +9,12 @@ import h5py
 import numpy as np
 import torch
 from torch.utils.data import Dataset as TorchDataset
+import torchvision.transforms as T
 
 from .utils import (
     load_img,
     combine,
     generate_random_square,
-    create_random_gradient_image,
 )
 
 IMAGE_SIZE = (200, 200)
@@ -178,16 +178,24 @@ class CleanDataset(TorchDataset):
             for index in range(len(self.json_data[h]["velocities"]))
         ]
 
+        self.transforms = torch.nn.Sequential(
+            T.Resize(IMAGE_SIZE),
+            T.ColorJitter(brightness=0.5, hue=0.3),
+            T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2)),
+            T.RandomSolarize(threshold=192.0, p=0.111),
+            T.RandomAdjustSharpness(sharpness_factor=2, p=0.111),
+            T.RandomAutocontrast(p=0.111),
+        )
+
     def __len__(self) -> int:
         return len(self.hash_index_tuples)
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
         hsh, sample_index = self.hash_index_tuples[index]
-        observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
-        observation = cv2.resize(
-            np.asarray(observation), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
-        )
-        observation = torch.from_numpy(observation).permute(2, 0, 1).float()
+        observation = torch.as_tensor(
+            np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
+        ).permute(2, 0, 1)
+        observation = self.transforms(observation)
 
         mask = np.asarray(self.hdf5_file[hsh]["mask"][sample_index])
         mask = cv2.resize(
@@ -220,7 +228,6 @@ class AugmentedTripletDataset(CleanDataset):
         target: str,
         background_images_directory: str,
         blur: bool = False,
-        augment_fg: bool = False
     ):
         super().__init__(hdf5_file, json_file)
         self.target = target
@@ -240,40 +247,37 @@ class AugmentedTripletDataset(CleanDataset):
             else []
         )
         self._blur = blur
-        self._augment_fg = augment_fg
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
         hsh, sample_index = self.hash_index_tuples[index]
         result = super().__getitem__(index)
 
-        observation = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
-        observation = cv2.resize(
-            np.asarray(observation), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
+        foreground = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
+        foreground = cv2.resize(
+            np.asarray(foreground), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
         )
 
-        # select foreground color and background map
-        foreground = (
-            create_random_gradient_image(size=observation.shape)
-            if self._augment_fg
-            else observation
-        )
+        # select background map
         background_img = load_img(
-            np.random.choice(self._background_images), size=observation.shape
+            np.random.choice(self._background_images), size=foreground.shape
         )
 
         # combine both as reference image
         result["reference"] = combine(
             result["mask"].numpy(), foreground, background_img, blur=self._blur
         )
+        result["reference"] = self.transforms(result["reference"])
         result["observation"] = result["reference"]
+
         # add different background for positive sample
         new_background_img = load_img(
-            np.random.choice(self._background_images), size=observation.shape
+            np.random.choice(self._background_images), size=foreground.shape
         )
         # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
         result["positive"] = combine(
             result["mask"].numpy(), foreground, new_background_img, blur=self._blur
         )
+        result["positive"] = self.transforms(result["positive"])
 
         # get different line with different background for negative sample
         random_other_index = index
@@ -282,17 +286,14 @@ class AugmentedTripletDataset(CleanDataset):
             random_other_index = np.random.randint(0, len(self))
 
         second_hsh, second_sample_index = self.hash_index_tuples[random_other_index]
-        if self.target != "line":
-            second_foreground = np.asarray(
-                self.hdf5_file[second_hsh]["observation"][second_sample_index]
-            )
-            second_foreground = cv2.resize(
-                np.asarray(second_foreground),
-                dsize=IMAGE_SIZE,
-                interpolation=cv2.INTER_LANCZOS4,
-            )
-        else:
-            second_foreground = create_random_gradient_image(size=observation.shape)
+        second_foreground = np.asarray(
+            self.hdf5_file[second_hsh]["observation"][second_sample_index]
+        )
+        second_foreground = cv2.resize(
+            np.asarray(second_foreground),
+            dsize=IMAGE_SIZE,
+            interpolation=cv2.INTER_LANCZOS4,
+        )
         second_mask = np.asarray(
             self.hdf5_file[second_hsh]["mask"][second_sample_index]
         )
@@ -302,6 +303,7 @@ class AugmentedTripletDataset(CleanDataset):
         result["negative"] = combine(
             second_mask, second_foreground, background_img, blur=self._blur,
         )
+        result["negative"] = self.transforms(result["negative"])
         return result
 
 
