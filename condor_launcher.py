@@ -10,7 +10,7 @@ PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": "(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6)",  #  && (machine != "ruchba.esat.kuleuven.be") && (machine != "dvbrecord.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "jabbah.esat.kuleuven.be")  && (machine != "matar.esat.kuleuven.be") && (machine != "ricotta.esat.kuleuven.be")  && (machine != "amalger.esat.kuleuven.be") && (machine != "amethyst.esat.kuleuven.be")
+    "Requirements": "(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6)",
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,
@@ -26,19 +26,18 @@ TARGETS = ["cone", "gate", "line"]
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        # "vanilla",
+        "vanilla",
         "default",
         "default_triplet",
         "deep_supervision",
         "deep_supervision_triplet",
         "deep_supervision_blur",
-        "deep_supervision_triplet_blur",
     ]
 ]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
-TEXTURE_DIR = "data/datasets/dtd_and_places"  # "not"  # "data/datasets/dtd_and_places"  # "data/datasets/places" # "data/datasets/dtd"
-OUTPUT_PATH = f"/users/visics/kkelchte/code/contrastive-learning/data/{os.path.basename(TEXTURE_DIR)}_augmented"
+TEXTURE_DIR = "data/datasets/dtd"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
 
 SUBMIT = True
 RM_EXIST = True
