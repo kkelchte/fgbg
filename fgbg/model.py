@@ -1,4 +1,5 @@
-from typing import Tuple, OrderedDict
+from typing import Tuple
+from collections import OrderedDict
 
 import torch
 from torch import nn

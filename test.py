@@ -37,7 +37,7 @@ def test_data_loading_augment():
         hdf5_file="data/debug_data/cone/data.hdf5",
         json_file="data/debug_data/cone/data.json",
         target="cone",
-        background_images_directory="data/dtd",
+        background_images_directory="data/datasets/dtd",
     )
     dataloader = TorchDataLoader(dataset, 9, shuffle=True)
     for batch in dataloader:

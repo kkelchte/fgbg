@@ -182,9 +182,6 @@ class CleanDataset(TorchDataset):
             T.Resize(IMAGE_SIZE),
             T.ColorJitter(brightness=0.5, hue=0.3),
             T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2)),
-            T.RandomSolarize(threshold=192.0, p=0.111),
-            T.RandomAdjustSharpness(sharpness_factor=2, p=0.111),
-            T.RandomAutocontrast(p=0.111),
         )
 
     def __len__(self) -> int:
