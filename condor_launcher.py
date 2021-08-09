@@ -10,7 +10,7 @@ PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": "(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6)",
+    "Requirements": "(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) && (machine != \"vladimir.esat.kuleuven.be\")",
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,
@@ -18,7 +18,7 @@ SPECS = {
     "RequestMemory": "10 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
-    "+RequestWalltime": int(100 * 3 * 60 * 1.3),
+    "+RequestWalltime": int(200 * 3 * 60 * 1.5),
 }
 
 TARGETS = ["cone", "gate", "line"]

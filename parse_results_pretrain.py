@@ -14,13 +14,13 @@ LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
-    # "vanilla",
+    "vanilla",
     "default",
     "default_triplet",
     "deep_supervision",
     "deep_supervision_triplet",
     "deep_supervision_blur",
-    "deep_supervision_triplet_blur",
+    # "deep_supervision_triplet_blur",
 ]
 output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
@@ -50,14 +50,17 @@ for target in TARGETS:
         print(f"Parsing config: {conf}")
         lr_paths = glob(f"{os.path.join(data_dir, 'pretrain',conf, target)}/*")
         lr_paths = [
-            p for p in lr_paths if os.path.exists(os.path.join(p, "results.txt"))
+            p
+            for p in lr_paths
+            if os.path.exists(os.path.join(p, "results.txt"))
+            and os.path.exists(os.path.join(p, "imgs"))
         ]
         values = {
             lrp: get_results_from_txt(os.path.join(lrp, "results.txt"))
             for lrp in lr_paths
         }
         validation_losses = {
-            lrp: values[lrp]["validation_bce_loss_avg"] for lrp in lr_paths
+            lrp: values[lrp]["out-of-distribution_bce_loss_avg"] for lrp in lr_paths
         }
         best_lrp = [
             k for k, v in sorted(validation_losses.items(), key=lambda item: item[1])
@@ -70,6 +73,9 @@ if WRITE_TABLE:
     # Print table and store to file:
     overview_file = open(output_dir + "/overview_table_pretrain.txt", "w")
     for target in ["cone", "gate", "line"]:
+        msg = f"{target} & & \\\\"
+        print(msg)
+        overview_file.write(msg + "\n")
         for conf in CONFIGS:
             try:
                 msg = f'{os.path.basename(conf).replace("_", " ")} '
