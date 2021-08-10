@@ -20,6 +20,7 @@ parser.add_argument("--target", type=str)
 parser.add_argument("--encoder_ckpt_dir", type=str)
 parser.add_argument("--evaluate", type=bool, default=False)
 parser.add_argument("--rm", type=bool, default=False)
+parser.add_argument("--batch_normalisation", type=bool, default=False)
 parser.add_argument("--end_to_end", type=bool, default=False)
 config = vars(parser.parse_args())
 if config["config_file"] is not None:
@@ -41,6 +42,9 @@ if __name__ == "__main__":
     if config["rm"] and os.path.isdir(output_directory):
         shutil.rmtree(output_directory)
     os.makedirs(output_directory, exist_ok=True)
+    with open(os.path.join(output_directory, 'config'), 'w') as f:
+        json.dump(config, f)
+        
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if config["task"] == "pretrain":

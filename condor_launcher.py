@@ -10,7 +10,7 @@ PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
 
 SPECS = {
     "Universe": "vanilla",
-    "Requirements": "(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) && (machine != \"vladimir.esat.kuleuven.be\")",
+    "Requirements": '(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) && (machine != "vladimir.esat.kuleuven.be")',
     "initial_dir": PROJECT_PATH,
     "priority": 1,
     "RequestCpus": 4,
@@ -37,7 +37,7 @@ CONFIGS = [
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
 TEXTURE_DIR = "data/datasets/dtd"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_and_fg_augmented_nobn"
 
 SUBMIT = True
 RM_EXIST = True
@@ -57,7 +57,7 @@ def create_condor_job_file(trgt, config, lrate):
         jobfile.write(f"executable     = {INTERPRETER_PATH} \n")
         jobfile.write(
             f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
-            f"--learning_rate {lrate} --target {trgt} "
+            f"--learning_rate {lrate} --target {trgt} --batch_normalisation False "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR}\n"
         )
 
