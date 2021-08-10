@@ -207,7 +207,11 @@ class DeepSupervisionNet(nn.Module):
 
 class DownstreamNet(nn.Module):
     def __init__(
-        self, output_size: tuple = (6,), encoder_ckpt_dir: str = None, end_to_end: bool = False, batch_norm: bool = False
+        self,
+        output_size: tuple = (6,),
+        encoder_ckpt_dir: str = None,
+        end_to_end: bool = False,
+        batch_norm: bool = False,
     ):
         super().__init__()
         self.global_step = 0
@@ -225,9 +229,9 @@ class DownstreamNet(nn.Module):
             )
         )
         if encoder_ckpt_dir is not None:
-            ckpt = torch.load(encoder_ckpt_dir + '/checkpoint_model.ckpt')
-            self.encoder.load_state_dict(ckpt['state_dict'])
-            print(f'Loaded encoder from {encoder_ckpt_dir}.')
+            ckpt = torch.load(encoder_ckpt_dir + "/checkpoint_model.ckpt")
+            self.encoder.load_state_dict(ckpt["state_dict"])
+            print(f"Loaded encoder from {encoder_ckpt_dir}.")
 
     def forward(self, inputs) -> torch.Tensor:
         if not self.end_to_end:
