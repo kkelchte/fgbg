@@ -79,7 +79,7 @@ for conf in CONFIGS:
             if SUBMIT:
                 print(f"submitting {filename}")
                 subprocess.call(shlex.split(f"condor_submit {filename}"))
-                time.sleep(0.1)
+                time.sleep(1)
     # wait 20 minutes
     # if SUBMIT and len(CONFIGS) != 1:
     #    time.sleep(10 * 60)
