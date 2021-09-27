@@ -7,6 +7,7 @@
     "training_directory": "data/datasets/gate_cone_line",
     "ood_directory": "data/datasets/gate_cone_line_realistic",
     "real_directory": "data/datasets/bebop_real",
+    "real_sequence_directory": "data/datasets/bebop_real_movies",
     "texture_directory": "data/datasets/dtd",
     "augment": 0,
     "blur": 0,

@@ -180,8 +180,8 @@ class CleanDataset(TorchDataset):
 
         self.transforms = torch.nn.Sequential(
             T.Resize(IMAGE_SIZE),
-            T.ColorJitter(brightness=0.5, hue=0.3),
-            T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2)),
+            T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
+            T.GaussianBlur(kernel_size=(1, 9), sigma=(0.1, 2)),
         )
 
     def __len__(self) -> int:
@@ -323,3 +323,19 @@ class ImagesDataset(TorchDataset):
         image = np.array(image.resize(IMAGE_SIZE), dtype=np.float32)
         image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
         return {"observation": image}
+
+
+class ImageSequenceDataset(TorchDataset):
+    def __init__(self, hdf5_file: str) -> None:
+        super().__init__()
+        self.hdf5_file = h5py.File(hdf5_file, "r", libver="latest", swmr=True)
+        self.image_sequences = list(self.hdf5_file.keys())
+
+    def __len__(self):
+        return len(self.image_sequences)
+
+    def __getitem__(self, index):
+        seq_key = self.image_sequences[index]
+        images = np.asarray(self.hdf5_file[seq_key]['observation'])
+        images = torch.from_numpy(images).permute(0, 3, 1, 2).float()
+        return {"observations": images}

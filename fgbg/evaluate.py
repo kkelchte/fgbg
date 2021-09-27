@@ -1,5 +1,6 @@
 import os
 
+import imageio
 import torch
 import torchvision
 import matplotlib.pyplot as plt
@@ -11,6 +12,21 @@ from torch.utils.data import Dataset as TorchDataset
 
 from .utils import normalize, get_IoU
 from .losses import WeightedBinaryCrossEntropyLoss
+
+
+def evaluate_qualitatively_on_sequences(
+    tag: str, dataset: TorchDataset, model: Module, output_directory: str,
+):
+    save_dir = os.path.join(output_directory, "imgs")
+    os.makedirs(save_dir, exist_ok=True)
+    for _ in range(len(dataset)):
+        data = dataset[_]
+        prediction = model(data["observations"], intermediate_outputs=False)
+        masks = prediction.detach().cpu().squeeze().numpy()
+        obs = data["observations"].detach().cpu().squeeze().permute(0, 2, 3, 1).numpy()
+        combined = obs * np.stack([masks + 0.3] * 3, axis=-1)
+        images = list((combined * 255.).astype(np.uint8))
+        imageio.mimsave(os.path.join(save_dir, f"{tag}_{_}.gif"), images)
 
 
 def evaluate_qualitatively_on_dataset(

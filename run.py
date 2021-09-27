@@ -42,9 +42,9 @@ if __name__ == "__main__":
     if config["rm"] and os.path.isdir(output_directory):
         shutil.rmtree(output_directory)
     os.makedirs(output_directory, exist_ok=True)
-    with open(os.path.join(output_directory, 'config'), 'w') as f:
+    with open(os.path.join(output_directory, "config"), "w") as f:
         json.dump(config, f)
-        
+
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if config["task"] == "pretrain":
@@ -131,11 +131,21 @@ if __name__ == "__main__":
         print(f"{fgbg.get_date_time_tag()} - Evaluate on validation images")
         fgbg.evaluate_qualitatively_on_dataset("validation", val_set, model, tb_writer)
 
-        print(f"{fgbg.get_date_time_tag()} - Evaluate on real images")
+        print(f"{fgbg.get_date_time_tag()} - Evaluate on real image")
         real_dataset = fgbg.ImagesDataset(
             target=target, dir_name=config["real_directory"]
         )
         fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
+        print(f"{fgbg.get_date_time_tag()} - Evaluate on real image sequence")
+        real_dataset = fgbg.ImageSequenceDataset(
+            hdf5_file=os.path.join(
+                config["real_sequence_directory"], target, "pruned_data.hdf5"
+            )
+        )
+        fgbg.evaluate_qualitatively_on_sequences(
+            "eval_real_sequence", real_dataset, model, output_directory
+        )
+
     print(f"{fgbg.get_date_time_tag()} - Evaluate on out-of-distribution images")
     ood_dataset = fgbg.CleanDataset(
         hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
