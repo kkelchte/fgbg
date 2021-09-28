@@ -110,8 +110,10 @@ if LINK_BEST_MODELS:
     for target in TARGETS:
         for conf in CONFIGS:
             # create symbolic link "best" pointing to best learning rate
+            #f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
+            # mv winning lr to 'best'    
             os.system(
-                f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
+                f"mv {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
             )
             msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
             print(msg)

@@ -91,7 +91,8 @@ if LINK_BEST_MODELS:
                 os.system(f"rm {os.path.dirname(winning_lrs[target][tsk])}/best")
             # create symbolic link "best" pointing to best learning rate
             os.system(
-                f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][tsk])} {os.path.dirname(winning_lrs[target][tsk])}/best"
+                # f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][tsk])} {os.path.dirname(winning_lrs[target][tsk])}/best"
+                f"mv {os.path.join(os.getcwd(), winning_lrs[target][tsk])} {os.path.dirname(winning_lrs[target][tsk])}/best"
             )
             msg = f"{target} - {tsk} - {winning_lrs[target][tsk]}"
             print(msg)

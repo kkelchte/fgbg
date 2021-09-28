@@ -69,14 +69,15 @@ if __name__ == "__main__":
         dataset = fgbg.CleanDataset(
             hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["training_directory"], target, "data.json"),
+            fg_augmentation=bool(config["fg_augmentation"])
         )
     else:
         dataset = fgbg.AugmentedTripletDataset(
             hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["training_directory"], target, "data.json"),
-            target=target,
             background_images_directory=config["texture_directory"],
             blur=bool(config["blur"]),
+            fg_augmentation=bool(config["fg_augmentation"])
         )
     train_set, val_set = torch.utils.data.random_split(
         dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
@@ -150,6 +151,7 @@ if __name__ == "__main__":
     ood_dataset = fgbg.CleanDataset(
         hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
         json_file=os.path.join(config["ood_directory"], target, "data.json"),
+        fg_augmentation=False
     )
     if config["task"] == "pretrain":
         fgbg.evaluate_qualitatively_on_dataset(

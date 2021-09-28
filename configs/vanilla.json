@@ -9,6 +9,7 @@
     "real_directory": "data/datasets/bebop_real",
     "real_sequence_directory": "data/datasets/bebop_real_movies",
     "texture_directory": "data/datasets/dtd",
+    "fg_augmentation": 0,
     "augment": 0,
     "blur": 0,
     "triplet": 0,

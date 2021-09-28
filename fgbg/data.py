@@ -160,9 +160,7 @@ class SquareTriangleDataset(TorchDataset):
 
 
 class CleanDataset(TorchDataset):
-    def __init__(
-        self, hdf5_file: str, json_file: str,
-    ):
+    def __init__(self, hdf5_file: str, json_file: str, fg_augmentation: bool = False):
         self.name = (
             os.path.basename(os.path.dirname(os.path.dirname(hdf5_file)))
             + "/"
@@ -177,12 +175,13 @@ class CleanDataset(TorchDataset):
             for h in list(self.json_data.keys())
             for index in range(len(self.json_data[h]["velocities"]))
         ]
-
-        self.transforms = torch.nn.Sequential(
-            T.Resize(IMAGE_SIZE),
-            T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
-            T.GaussianBlur(kernel_size=(1, 9), sigma=(0.1, 2)),
-        )
+        self.transforms = [T.Resize(IMAGE_SIZE)]
+        if fg_augmentation:
+            self.transforms.append(
+                T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
+                T.GaussianBlur(kernel_size=(1, 9), sigma=(0.1, 2)),
+            )
+        self.transforms = torch.nn.Sequential(*self.transforms)
 
     def __len__(self) -> int:
         return len(self.hash_index_tuples)
@@ -222,12 +221,11 @@ class AugmentedTripletDataset(CleanDataset):
         self,
         hdf5_file: str,
         json_file: str,
-        target: str,
         background_images_directory: str,
         blur: bool = False,
+        fg_augmentation: bool = False,
     ):
-        super().__init__(hdf5_file, json_file)
-        self.target = target
+        super().__init__(hdf5_file, json_file, fg_augmentation)
         self._background_images = (
             [
                 os.path.join(background_images_directory, sub_directory, image)
@@ -336,6 +334,6 @@ class ImageSequenceDataset(TorchDataset):
 
     def __getitem__(self, index):
         seq_key = self.image_sequences[index]
-        images = np.asarray(self.hdf5_file[seq_key]['observation'])
+        images = np.asarray(self.hdf5_file[seq_key]["observation"])
         images = torch.from_numpy(images).permute(0, 3, 1, 2).float()
         return {"observations": images}
