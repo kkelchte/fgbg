@@ -20,7 +20,7 @@ parser.add_argument("--target", type=str)
 parser.add_argument("--encoder_ckpt_dir", type=str)
 parser.add_argument("--evaluate", type=bool, default=False)
 parser.add_argument("--rm", type=bool, default=False)
-parser.add_argument("--batch_normalisation", type=bool, default=False)
+parser.add_argument("--batch_normalisation", type=bool)
 parser.add_argument("--end_to_end", type=bool, default=False)
 config = vars(parser.parse_args())
 if config["config_file"] is not None:

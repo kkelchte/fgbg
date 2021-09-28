@@ -177,10 +177,10 @@ class CleanDataset(TorchDataset):
         ]
         self.transforms = [T.Resize(IMAGE_SIZE)]
         if fg_augmentation:
-            self.transforms.append(
+            self.transforms.extend([
                 T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
                 T.GaussianBlur(kernel_size=(1, 9), sigma=(0.1, 2)),
-            )
+            ])
         self.transforms = torch.nn.Sequential(*self.transforms)
 
     def __len__(self) -> int:

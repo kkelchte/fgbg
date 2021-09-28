@@ -7,7 +7,7 @@ import shlex
 
 INTERPRETER_PATH = "/esat/opal/kkelchte/conda/envs/venv/bin/python"
 PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
-OUTPUT_PATH = "data/dtd_augmented"
+OUTPUT_PATH = "data/down_stream"
 
 SPECS = {
     "Universe": "vanilla",
@@ -27,18 +27,18 @@ TASKS = ["waypoints", "velocities"]
 END2END = False
 TEXTURE_DIR = {
     "cone": "data/datasets/dtd",
-    "gate": "data/datasets/dtd",
     "line": "data/datasets/dtd",
+    "gate": "data/datasets/dtd",
 }
 CONFIGS = {
-    "cone": "deep_supervision_blur",
-    "gate": "deep_supervision_blur",
-    "line": "deep_supervision_blur",
+    "cone": "default",
+    "line": "default_fg",
+    "gate": "deep_supervision_triplet",
 }
 ENCODERS = {
-    "cone": "data/dtd_augmented/pretrain/deep_supervision_blur/cone/best",
-    "gate": "data/dtd_augmented/pretrain/deep_supervision_blur/gate/best",
-    "line": "data/dtd_augmented/pretrain/deep_supervision_blur/line/best",
+    "cone": "data/dtd_and_places_augmented/default/cone/best",
+    "line": "data/dtd_and_fg_augmented/pretrain/default/line/best",
+    "gate": "data/dtd_augmented/deep_supervision_triplet/gate/best",
 }
 
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
