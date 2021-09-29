@@ -19,9 +19,9 @@ SPECS = {
     "RequestMemory": "10 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
-    "+RequestWalltime": int(100 * 3 * 60 * 2),
+    "+RequestWalltime": int(50 * 3 * 60),
 }
-
+NUMEPOCH = 50
 TARGETS = ["cone", "gate", "line"]
 TASKS = ["waypoints", "velocities"]
 END2END = False
@@ -63,7 +63,7 @@ def create_condor_job_file(trgt, task, lrate):
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
             f"--encoder_ckpt_dir {ENCODERS[trgt]} "
-            f"--task {task} --end_to_end {END2END}\n"
+            f"--task {task} --end_to_end {END2END} --number_of_epochs {NUMEPOCH} \n"
         )
 
         for key, value in SPECS.items():
