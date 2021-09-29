@@ -162,3 +162,4 @@ if __name__ == "__main__":
     )
 
     print(f"{fgbg.get_date_time_tag()} - Finished")
+    os.system(f'touch {output_directory}/FINISHED')
