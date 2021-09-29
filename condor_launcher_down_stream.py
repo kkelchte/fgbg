@@ -19,7 +19,7 @@ SPECS = {
     "RequestMemory": "10 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
-    "+RequestWalltime": int(100 * 3 * 60 * 1.3),
+    "+RequestWalltime": int(100 * 3 * 60 * 2),
 }
 
 TARGETS = ["cone", "gate", "line"]
@@ -41,7 +41,7 @@ ENCODERS = {
     "gate": "data/dtd_augmented/deep_supervision_triplet/gate/best",
 }
 
-LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
+LEARNING_RATES = [0.001, 0.0001, 0.00001]
 SUBMIT = True
 RM_EXIST = True
 
