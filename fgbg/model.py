@@ -223,7 +223,7 @@ class DownstreamNet(nn.Module):
             )
         )
         if encoder_ckpt_dir is not None:
-            ckpt = torch.load(encoder_ckpt_dir + '/checkpoint_model.ckpt')
+            ckpt = torch.load(encoder_ckpt_dir + '/checkpoint_model.ckpt', map_location=torch.device('cpu'))
             self.encoder.load_state_dict(ckpt['state_dict'])
             print(f'Loaded encoder from {encoder_ckpt_dir}.')
 
