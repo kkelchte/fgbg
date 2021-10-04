@@ -1,5 +1,4 @@
 import os
-import sys
 from argparse import ArgumentParser
 import shutil
 
@@ -20,10 +19,17 @@ parser.add_argument("--output_dir", type=str)
 parser.add_argument("--target", type=str)
 parser.add_argument("--encoder_ckpt_dir", type=str)
 parser.add_argument("--number_of_epochs", type=int)
-parser.add_argument('--end_to_end', dest='end_to_end', action='store_true', default=False)
-parser.add_argument('--evaluate', dest='evaluate', action='store_true', default=False)
-parser.add_argument('--rm', dest='rm', action='store_true', default=False)
-parser.add_argument('--batch_normalisation', dest='batch_normalisation', action='store_true', default=False)
+parser.add_argument(
+    "--end_to_end", dest="end_to_end", action="store_true", default=False
+)
+parser.add_argument("--evaluate", dest="evaluate", action="store_true", default=False)
+parser.add_argument("--rm", dest="rm", action="store_true", default=False)
+parser.add_argument(
+    "--batch_normalisation",
+    dest="batch_normalisation",
+    action="store_true",
+    default=False,
+)
 config = vars(parser.parse_args())
 print(config)
 if config["config_file"] is not None:
@@ -52,7 +58,7 @@ if __name__ == "__main__":
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if config["task"] == "pretrain":
-        if config["architecture"] == 'densedepth':
+        if config["architecture"] == "densedepth":
             model = fgbg.DenseDepthNet()
         else:
             model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
@@ -76,7 +82,9 @@ if __name__ == "__main__":
         dataset = fgbg.CleanDataset(
             hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["training_directory"], target, "data.json"),
-            fg_augmentation=bool(config["fg_augmentation"])
+            fg_augmentation=bool(config["fg_augmentation"]),
+            input_size=model.input_size,
+            output_size=model.output_size,
         )
     else:
         dataset = fgbg.AugmentedTripletDataset(
@@ -84,7 +92,9 @@ if __name__ == "__main__":
             json_file=os.path.join(config["training_directory"], target, "data.json"),
             background_images_directory=config["texture_directory"],
             blur=bool(config["blur"]),
-            fg_augmentation=bool(config["fg_augmentation"])
+            fg_augmentation=bool(config["fg_augmentation"]),
+            input_size=model.input_size,
+            output_size=model.output_size,
         )
     train_set, val_set = torch.utils.data.random_split(
         dataset, [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))]
@@ -141,13 +151,20 @@ if __name__ == "__main__":
 
         print(f"{fgbg.get_date_time_tag()} - Evaluate on real image")
         real_dataset = fgbg.ImagesDataset(
-            target=target, dir_name=config["real_directory"]
+            target=target,
+            dir_name=config["real_directory"],
+            input_size=model.input_size,
+            output_size=model.output_size,
         )
         fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
         print(f"{fgbg.get_date_time_tag()} - Evaluate on real image sequence")
         real_dataset = fgbg.ImageSequenceDataset(
             hdf5_file=os.path.join(
-                config["real_sequence_directory"], target, "pruned_data.hdf5"
+                config["real_sequence_directory"],
+                target,
+                "pruned_data.hdf5",
+                input_size=model.input_size,
+                output_size=model.output_size,
             )
         )
         fgbg.evaluate_qualitatively_on_sequences(
@@ -158,7 +175,9 @@ if __name__ == "__main__":
     ood_dataset = fgbg.CleanDataset(
         hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
         json_file=os.path.join(config["ood_directory"], target, "data.json"),
-        fg_augmentation=False
+        fg_augmentation=False,
+        input_size=model.input_size,
+        output_size=model.output_size,
     )
     if config["task"] == "pretrain":
         fgbg.evaluate_qualitatively_on_dataset(
@@ -169,4 +188,4 @@ if __name__ == "__main__":
     )
 
     print(f"{fgbg.get_date_time_tag()} - Finished")
-    os.system(f'touch {output_directory}/FINISHED')
+    os.system(f"touch {output_directory}/FINISHED")

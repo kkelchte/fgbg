@@ -6,7 +6,6 @@ from PIL import Image
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import imageio
 
 
@@ -20,8 +19,10 @@ def get_IoU(predictions, labels):
     """
     eps = 1e-6
     # assert N x H x W
-    assert len(predictions.shape) == 3
-    assert len(labels.shape) == 3
+    if len(predictions.shape) != 3:
+        predictions.unsqueeze_(0)
+    if len(labels.shape) != 3:
+        labels.unsqueeze_(0)
     outputs = predictions.round().int()
     labels = labels.int()
     # Will be zero if Truth=0 or Prediction=0
@@ -80,6 +81,8 @@ def combine(
         sigma = np.random.uniform(0.1, 3)  # select deviation
         mask = cv2.GaussianBlur(mask, (kernel_size, kernel_size), sigma)
     mask = np.stack([mask] * foreground.shape[2], axis=-1)
+    if mask.shape != foreground.shape:
+        mask = cv2.resize(mask, foreground.shape[:-1])
     combination = mask * foreground + (1 - mask) * background
     combination = torch.from_numpy(combination).permute(2, 0, 1).float()
     return combination

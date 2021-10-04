@@ -15,7 +15,11 @@ from .losses import WeightedBinaryCrossEntropyLoss
 
 
 def evaluate_qualitatively_on_sequences(
-    tag: str, dataset: TorchDataset, model: Module, output_directory: str, device: str='cpu'
+    tag: str,
+    dataset: TorchDataset,
+    model: Module,
+    output_directory: str,
+    device: str = "cpu",
 ):
     save_dir = os.path.join(output_directory, "imgs")
     os.makedirs(save_dir, exist_ok=True)
@@ -25,7 +29,7 @@ def evaluate_qualitatively_on_sequences(
         masks = prediction.detach().cpu().squeeze().numpy()
         obs = data["observations"].detach().cpu().squeeze().permute(0, 2, 3, 1).numpy()
         combined = obs * np.stack([masks + 0.3] * 3, axis=-1)
-        images = list((combined * 255.).astype(np.uint8))
+        images = list((combined * 255.0).astype(np.uint8))
         imageio.mimsave(os.path.join(save_dir, f"{tag}_{_}.gif"), images)
 
 

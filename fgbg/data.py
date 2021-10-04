@@ -1,6 +1,5 @@
 import os
 from typing import Dict
-import copy
 
 from PIL import Image
 import json
@@ -14,153 +13,18 @@ import torchvision.transforms as T
 from .utils import (
     load_img,
     combine,
-    generate_random_square,
 )
-
-IMAGE_SIZE = (200, 200)
-
-
-class SquareCircleDataset(TorchDataset):
-    def __len__(self) -> int:
-        return 1000
-
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        target_img = generate_random_square()
-        # copy target image with square to create input image
-        reference_img = copy.deepcopy(target_img)
-        # Add random circle
-        height, width = 128, 128
-        color = (1, 1, 1)
-        circle_radius = 5 + np.random.randint(int(width / 8))
-        circle_location = (
-            circle_radius + np.random.randint(width - 2 * circle_radius),
-            circle_radius + np.random.randint(height - 2 * circle_radius),
-        )
-        cv2.circle(reference_img, circle_location, circle_radius, color, -1)
-        # negative image with same circle
-        negative_img = generate_random_square()
-        cv2.circle(negative_img, circle_location, circle_radius, color, -1)
-        # positive image with new circle
-        positive_img = copy.deepcopy(target_img)
-        circle_radius = 5 + np.random.randint(int(width / 8))
-        circle_location = (
-            circle_radius + np.random.randint(width - 2 * circle_radius),
-            circle_radius + np.random.randint(height - 2 * circle_radius),
-        )
-        cv2.circle(positive_img, circle_location, circle_radius, color, -1)
-        result = {
-            "reference": torch.from_numpy(reference_img).permute(2, 0, 1).float(),
-            "positive": torch.from_numpy(positive_img).permute(2, 0, 1).float(),
-            "negative": torch.from_numpy(negative_img).permute(2, 0, 1).float(),
-            "target": torch.from_numpy(target_img).permute(2, 0, 1).float(),
-        }
-        return result
-
-
-class SquareDoubleCircleDataset(TorchDataset):
-    def __len__(self) -> int:
-        return 1000
-
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        target_img = generate_random_square()
-        # copy target image with square to create input image
-        reference_img = copy.deepcopy(target_img)
-        # Add two random circles
-        height, width = 128, 128
-        color = (1, 1, 1)
-        circle_radius = 5 + np.random.randint(int(width / 8))
-        circle_location = (
-            circle_radius + np.random.randint(width - 2 * circle_radius),
-            circle_radius + np.random.randint(height - 2 * circle_radius),
-        )
-        cv2.circle(reference_img, circle_location, circle_radius, color, -1)
-        circle_radius_two = 5 + np.random.randint(int(width / 8))
-        circle_location_two = (
-            circle_radius_two + np.random.randint(width - 2 * circle_radius_two),
-            circle_radius_two + np.random.randint(height - 2 * circle_radius_two),
-        )
-        cv2.circle(reference_img, circle_location_two, circle_radius_two, color, -1)
-        # negative image with same circle
-        negative_img = generate_random_square()
-        cv2.circle(negative_img, circle_location, circle_radius, color, -1)
-        cv2.circle(negative_img, circle_location_two, circle_radius_two, color, -1)
-        # positive image with new circle
-        positive_img = copy.deepcopy(target_img)
-        circle_radius = 5 + np.random.randint(int(width / 8))
-        circle_location = (
-            circle_radius + np.random.randint(width - 2 * circle_radius),
-            circle_radius + np.random.randint(height - 2 * circle_radius),
-        )
-        cv2.circle(positive_img, circle_location, circle_radius, color, -1)
-        circle_radius_two = 5 + np.random.randint(int(width / 8))
-        circle_location_two = (
-            circle_radius_two + np.random.randint(width - 2 * circle_radius_two),
-            circle_radius_two + np.random.randint(height - 2 * circle_radius_two),
-        )
-        cv2.circle(positive_img, circle_location_two, circle_radius_two, color, -1)
-        result = {
-            "reference": torch.from_numpy(reference_img).permute(2, 0, 1).float(),
-            "positive": torch.from_numpy(positive_img).permute(2, 0, 1).float(),
-            "negative": torch.from_numpy(negative_img).permute(2, 0, 1).float(),
-            "target": torch.from_numpy(target_img).permute(2, 0, 1).float(),
-        }
-        return result
-
-
-class SquareTriangleDataset(TorchDataset):
-    def __len__(self) -> int:
-        return 1000
-
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        width, height = 128, 128
-        target_img = generate_random_square()
-        # copy target image with square to create input image
-        reference_img = copy.deepcopy(target_img)
-
-        # add triangle
-        square_location = (
-            np.random.randint(width - 50),
-            np.random.randint(height - 50),
-        )
-        contour = [
-            (
-                square_location[0] + np.random.randint(-10, 10),
-                square_location[0] + np.random.randint(-10, 10),
-            )
-            for _ in range(3)
-        ]
-        cv2.drawContours(reference_img, [np.asarray(contour)], 0, (1, 1, 1), -1)
-
-        # negative image with same traingle
-        negative_img = generate_random_square()
-        cv2.drawContours(negative_img, [np.asarray(contour)], 0, (1, 1, 1), -1)
-
-        # positive image with new triangle
-        positive_img = copy.deepcopy(target_img)
-        square_location = (
-            np.random.randint(width - 50),
-            np.random.randint(height - 50),
-        )
-        contour = [
-            (
-                square_location[0] + np.random.randint(-10, 10),
-                square_location[0] + np.random.randint(-10, 10),
-            )
-            for _ in range(3)
-        ]
-        cv2.drawContours(positive_img, [np.asarray(contour)], 0, (1, 1, 1), -1)
-
-        result = {
-            "reference": torch.from_numpy(reference_img).permute(2, 0, 1).float(),
-            "positive": torch.from_numpy(positive_img).permute(2, 0, 1).float(),
-            "negative": torch.from_numpy(negative_img).permute(2, 0, 1).float(),
-            "target": torch.from_numpy(target_img).permute(2, 0, 1).float(),
-        }
-        return result
 
 
 class CleanDataset(TorchDataset):
-    def __init__(self, hdf5_file: str, json_file: str, fg_augmentation: bool = False):
+    def __init__(
+        self,
+        hdf5_file: str,
+        json_file: str,
+        fg_augmentation: bool = False,
+        input_size: tuple = (3, 200, 200),
+        output_size: tuple = (200, 200),
+    ):
         self.name = (
             os.path.basename(os.path.dirname(os.path.dirname(hdf5_file)))
             + "/"
@@ -175,12 +39,18 @@ class CleanDataset(TorchDataset):
             for h in list(self.json_data.keys())
             for index in range(len(self.json_data[h]["velocities"]))
         ]
-        self.transforms = [T.Resize(IMAGE_SIZE)]
+        self.input_size = input_size
+        self.output_size = output_size
+        self.transforms = [T.Resize(self.input_size[1:])]
         if fg_augmentation:
-            self.transforms.extend([
-                T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
-                T.GaussianBlur(kernel_size=(1, 9), sigma=(0.1, 2)),
-            ])
+            self.transforms.extend(
+                [
+                    T.ColorJitter(
+                        brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1
+                    ),
+                    T.GaussianBlur(kernel_size=(1, 9), sigma=(0.1, 2)),
+                ]
+            )
         self.transforms = torch.nn.Sequential(*self.transforms)
 
     def __len__(self) -> int:
@@ -195,7 +65,7 @@ class CleanDataset(TorchDataset):
 
         mask = np.asarray(self.hdf5_file[hsh]["mask"][sample_index])
         mask = cv2.resize(
-            np.asarray(mask), dsize=IMAGE_SIZE, interpolation=cv2.INTER_NEAREST
+            np.asarray(mask), dsize=self.output_size, interpolation=cv2.INTER_NEAREST
         )
         mask = torch.from_numpy(mask).float()
 
@@ -224,8 +94,10 @@ class AugmentedTripletDataset(CleanDataset):
         background_images_directory: str,
         blur: bool = False,
         fg_augmentation: bool = False,
+        input_size: tuple = (3, 200, 200),
+        output_size: tuple = (200, 200),
     ):
-        super().__init__(hdf5_file, json_file, fg_augmentation)
+        super().__init__(hdf5_file, json_file, fg_augmentation, input_size, output_size)
         self._background_images = (
             [
                 os.path.join(background_images_directory, sub_directory, image)
@@ -249,7 +121,9 @@ class AugmentedTripletDataset(CleanDataset):
 
         foreground = np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
         foreground = cv2.resize(
-            np.asarray(foreground), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
+            np.asarray(foreground),
+            dsize=self.input_size[1:],
+            interpolation=cv2.INTER_LANCZOS4,
         )
 
         # select background map
@@ -286,14 +160,16 @@ class AugmentedTripletDataset(CleanDataset):
         )
         second_foreground = cv2.resize(
             np.asarray(second_foreground),
-            dsize=IMAGE_SIZE,
+            dsize=self.input_size[1:],
             interpolation=cv2.INTER_LANCZOS4,
         )
         second_mask = np.asarray(
             self.hdf5_file[second_hsh]["mask"][second_sample_index]
         )
         second_mask = cv2.resize(
-            np.asarray(second_mask), dsize=IMAGE_SIZE, interpolation=cv2.INTER_LANCZOS4
+            np.asarray(second_mask),
+            dsize=self.output_size,
+            interpolation=cv2.INTER_LANCZOS4,
         )
         result["negative"] = combine(
             second_mask, second_foreground, background_img, blur=self._blur,
@@ -303,7 +179,13 @@ class AugmentedTripletDataset(CleanDataset):
 
 
 class ImagesDataset(TorchDataset):
-    def __init__(self, dir_name: str, target: str) -> None:
+    def __init__(
+        self,
+        dir_name: str,
+        target: str,
+        input_size: tuple = (3, 200, 200),
+        output_size: tuple = (100, 100),
+    ) -> None:
         super().__init__()
         self.name = os.path.basename(dir_name)
         self.images = [
@@ -311,6 +193,8 @@ class ImagesDataset(TorchDataset):
             for f in os.listdir(dir_name)
             if f.endswith(".png") and target in f
         ]
+        self.input_size = input_size
+        self.output_size = output_size
 
     def __len__(self):
         return len(self.images)
@@ -318,16 +202,24 @@ class ImagesDataset(TorchDataset):
     def __getitem__(self, index):
         img_file = self.images[index]
         image = Image.open(img_file)
-        image = np.array(image.resize(IMAGE_SIZE), dtype=np.float32)
+        image = np.array(image.resize(self.input_size[1:]), dtype=np.float32)
         image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
         return {"observation": image}
 
 
 class ImageSequenceDataset(TorchDataset):
-    def __init__(self, hdf5_file: str) -> None:
+    def __init__(
+        self,
+        hdf5_file: str,
+        input_size: tuple = (3, 200, 200),
+        output_size: tuple = (100, 100),
+    ) -> None:
         super().__init__()
         self.hdf5_file = h5py.File(hdf5_file, "r", libver="latest", swmr=True)
         self.image_sequences = list(self.hdf5_file.keys())
+        self.input_size = input_size
+        self.output_size = output_size
+        self.transforms = [T.Resize(self.input_size[1:])]
 
     def __len__(self):
         return len(self.image_sequences)
@@ -336,4 +228,5 @@ class ImageSequenceDataset(TorchDataset):
         seq_key = self.image_sequences[index]
         images = np.asarray(self.hdf5_file[seq_key]["observation"])
         images = torch.from_numpy(images).permute(0, 3, 1, 2).float()
+        images = self.transforms(images)
         return {"observations": images}
