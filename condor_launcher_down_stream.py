@@ -24,7 +24,6 @@ SPECS = {
 NUMEPOCH = 50
 TARGETS = ["cone", "gate", "line"]
 TASKS = ["waypoints", "velocities"]
-END2END = False
 TEXTURE_DIR = {
     "cone": "data/datasets/dtd",
     "line": "data/datasets/dtd",
@@ -63,7 +62,7 @@ def create_condor_job_file(trgt, task, lrate):
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
             f"--encoder_ckpt_dir {ENCODERS[trgt]} "
-            f"--task {task} --end_to_end {END2END} --number_of_epochs {NUMEPOCH} \n"
+            f"--task {task} --number_of_epochs {NUMEPOCH} \n"
         )
 
         for key, value in SPECS.items():
