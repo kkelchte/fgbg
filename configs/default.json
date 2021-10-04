@@ -4,6 +4,7 @@
     "batch_size": 10,
     "number_of_epochs": 100,
     "task": "pretrain",
+    "architecture": "deepsupervision",
     "training_directory": "data/datasets/gate_cone_line",
     "ood_directory": "data/datasets/gate_cone_line_realistic",
     "real_directory": "data/datasets/bebop_real",
