@@ -4,20 +4,32 @@ from collections import OrderedDict
 import torch
 from torch import nn
 
-from dense_depth_model import Encoder, Decoder
+from fgbg.dense_depth_model import Encoder, Decoder
+
 
 class DenseDepthNet(nn.Module):
-    def __init__(self, 
-                 checkpoint_file: str = 'data/pretrained_models/depth_net/checkpoint_model.ckpt'):
+    def __init__(
+        self,
+        checkpoint_file: str = "data/pretrained_models/depth_net/checkpoint_model.ckpt",
+    ):
         super(DenseDepthNet, self).__init__()
         self.encoder = Encoder()
         self.decoder = Decoder()
         ckpt = torch.load(checkpoint_file)
-        self.load_state_dict(ckpt['state_dict'])
+        self.load_state_dict(ckpt["state_dict"])
+        self.global_step = 0
+        self.input_size = (3, 200, 200)
+        self.output_size = (100, 100)
+        self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x):
-        return self.decoder(self.encoder(x))
-    
+    def forward(self, x, intermediate_outputs: bool = False):
+        if intermediate_outputs:
+            raise NotImplementedError(
+                "Deep Supervision is not implemented for dense depth network"
+            )
+        # Depth is inverted to give close values a relative large value
+        # Sigmoid is used to map values between 0 and 1
+        return self.sigmoid(-self.decoder(self.encoder(x)))
 
 
 class ResidualBlock(nn.Module):
@@ -244,9 +256,12 @@ class DownstreamNet(nn.Module):
             )
         )
         if encoder_ckpt_dir is not None:
-            ckpt = torch.load(encoder_ckpt_dir + '/checkpoint_model.ckpt', map_location=torch.device('cpu'))
-            self.encoder.load_state_dict(ckpt['state_dict'])
-            print(f'Loaded encoder from {encoder_ckpt_dir}.')
+            ckpt = torch.load(
+                encoder_ckpt_dir + "/checkpoint_model.ckpt",
+                map_location=torch.device("cpu"),
+            )
+            self.encoder.load_state_dict(ckpt["state_dict"])
+            print(f"Loaded encoder from {encoder_ckpt_dir}.")
 
     def forward(self, inputs) -> torch.Tensor:
         if not self.end_to_end:
