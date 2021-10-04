@@ -1,4 +1,5 @@
 import os
+import sys
 from argparse import ArgumentParser
 import shutil
 
@@ -18,18 +19,20 @@ parser.add_argument("--learning_rate", type=float)
 parser.add_argument("--output_dir", type=str)
 parser.add_argument("--target", type=str)
 parser.add_argument("--encoder_ckpt_dir", type=str)
-parser.add_argument("--evaluate", type=bool, default=False)
-parser.add_argument("--rm", type=bool, default=False)
 parser.add_argument("--number_of_epochs", type=int)
-parser.add_argument("--batch_normalisation", type=bool)
-parser.add_argument("--end_to_end", type=bool)
+parser.add_argument('--end_to_end', dest='end_to_end', action='store_true', default=False)
+parser.add_argument('--evaluate', dest='evaluate', action='store_true', default=False)
+parser.add_argument('--rm', dest='rm', action='store_true', default=False)
+parser.add_argument('--batch_normalisation', dest='batch_normalisation', action='store_true', default=False)
 config = vars(parser.parse_args())
+print(config)
 if config["config_file"] is not None:
     with open(config["config_file"], "r") as f:
         json_config = json.load(f)
     for k, v in config.items():
         if v is not None:
             json_config[k] = v
+            print(k, v)
     config = json_config  # update config to json's config
 pprint(config)
 
@@ -54,15 +57,15 @@ if __name__ == "__main__":
         model = fgbg.DownstreamNet(
             output_size=(4,),
             encoder_ckpt_dir=config["encoder_ckpt_dir"],
-            end_to_end=bool(config["end_to_end"]),
-            batch_norm=bool(config["batch_normalisation"]),
+            end_to_end=config["end_to_end"],
+            batch_norm=config["batch_normalisation"],
         )
     elif config["task"] == "waypoints":
         model = fgbg.DownstreamNet(
             output_size=(3,),
             encoder_ckpt_dir=config["encoder_ckpt_dir"],
-            end_to_end=bool(config["end_to_end"]),
-            batch_norm=bool(config["batch_normalisation"]),
+            end_to_end=config["end_to_end"],
+            batch_norm=config["batch_normalisation"],
         )
 
     print(f"{fgbg.get_date_time_tag()} - Generate dataset")
