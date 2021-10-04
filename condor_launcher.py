@@ -32,13 +32,14 @@ CONFIGS = [
         # "deep_supervision",
         # "deep_supervision_triplet",
         # "deep_supervision_blur",
-        "dense_depth_default"
+        "dense_depth_default",
+        "dense_depth_default_fg",
     ]
 ]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
 
 TEXTURE_DIR = "data/datasets/dtd"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_and_fg_augmented_nobn"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
 
 SUBMIT = True
 RM_EXIST = True

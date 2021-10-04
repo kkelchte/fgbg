@@ -72,7 +72,7 @@ def load_img(img_path: str, size: tuple = (128, 128, 3)) -> np.ndarray:
     return data
 
 
-def combine(
+def combine_fg_bg(
     mask: np.ndarray, foreground: np.ndarray, background: np.ndarray, blur: bool = False
 ) -> torch.Tensor:
     if blur:
@@ -85,6 +85,20 @@ def combine(
         mask = cv2.resize(mask, foreground.shape[:-1])
     combination = mask * foreground + (1 - mask) * background
     combination = torch.from_numpy(combination).permute(2, 0, 1).float()
+    return combination
+
+
+def combine_mask_observation(mask: np.array, observation: np.array) -> np.array:
+    mask = np.stack([mask + 0.3] * 3, axis=-1)
+    mask = np.clip(mask, 0, 1)
+    if mask.shape != observation.shape:
+        if len(mask.shape) == 4:
+            mask = np.stack(
+                [cv2.resize(m, observation.shape[1:-1]) for m in mask], axis=0
+            )
+        else:
+            mask = cv2.resize(mask, observation.shape[:-1])
+    combination = observation * mask
     return combination
 
 

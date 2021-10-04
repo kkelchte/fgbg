@@ -12,7 +12,7 @@ import torchvision.transforms as T
 
 from .utils import (
     load_img,
-    combine,
+    combine_fg_bg,
 )
 
 
@@ -132,7 +132,7 @@ class AugmentedTripletDataset(CleanDataset):
         )
 
         # combine both as reference image
-        result["reference"] = combine(
+        result["reference"] = combine_fg_bg(
             result["mask"].numpy(), foreground, background_img, blur=self._blur
         )
         result["reference"] = self.transforms(result["reference"])
@@ -143,7 +143,7 @@ class AugmentedTripletDataset(CleanDataset):
             np.random.choice(self._background_images), size=foreground.shape
         )
         # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
-        result["positive"] = combine(
+        result["positive"] = combine_fg_bg(
             result["mask"].numpy(), foreground, new_background_img, blur=self._blur
         )
         result["positive"] = self.transforms(result["positive"])
@@ -171,7 +171,7 @@ class AugmentedTripletDataset(CleanDataset):
             dsize=self.output_size,
             interpolation=cv2.INTER_LANCZOS4,
         )
-        result["negative"] = combine(
+        result["negative"] = combine_fg_bg(
             second_mask, second_foreground, background_img, blur=self._blur,
         )
         result["negative"] = self.transforms(result["negative"])
@@ -219,7 +219,7 @@ class ImageSequenceDataset(TorchDataset):
         self.image_sequences = list(self.hdf5_file.keys())
         self.input_size = input_size
         self.output_size = output_size
-        self.transforms = [T.Resize(self.input_size[1:])]
+        self.transforms = torch.nn.Sequential(T.Resize(self.input_size[1:]))
 
     def __len__(self):
         return len(self.image_sequences)

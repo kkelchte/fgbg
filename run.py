@@ -160,12 +160,10 @@ if __name__ == "__main__":
         print(f"{fgbg.get_date_time_tag()} - Evaluate on real image sequence")
         real_dataset = fgbg.ImageSequenceDataset(
             hdf5_file=os.path.join(
-                config["real_sequence_directory"],
-                target,
-                "pruned_data.hdf5",
-                input_size=model.input_size,
-                output_size=model.output_size,
-            )
+                config["real_sequence_directory"], target, "pruned_data.hdf5"
+            ),
+            input_size=model.input_size,
+            output_size=model.output_size,
         )
         fgbg.evaluate_qualitatively_on_sequences(
             "eval_real_sequence", real_dataset, model, output_directory
