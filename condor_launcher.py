@@ -26,7 +26,7 @@ SPECS = {
     "RequestMemory": "10 G",
     "RequestDisk": "50 G",
     "Niceuser": "True",
-    "+RequestWalltime": int(200 * 3 * 60 * 1.5),
+    "+RequestWalltime": int(100 * 7 * 60 * 3),
 }
 
 # TARGETS = ["cone", "gate", "line"]
