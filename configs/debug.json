@@ -11,11 +11,11 @@
     "real_directory": "data/datasets/bebop_real",
     "real_sequence_directory": "data/datasets/bebop_real_movies",
     "texture_directory": "data/datasets/dtd",
-    "fg_augmentation": 0,
+    "fg_augmentation": 1,
     "augment": 1,
-    "blur": 1,
-    "triplet": 0.0,
-    "mode": "deep_supervision",
-    "batch_normalisation": 1,
+    "blur": 0,
+    "triplet": 0,
+    "deep_supervision": 0,
+    "batch_normalisation": 0,
     "end_to_end": 0
 }

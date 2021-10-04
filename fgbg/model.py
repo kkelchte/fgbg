@@ -17,6 +17,7 @@ class DenseDepthNet(nn.Module):
         self.decoder = Decoder()
         ckpt = torch.load(checkpoint_file)
         self.load_state_dict(ckpt["state_dict"])
+        print("loaded dense depth net")
         self.global_step = 0
         self.input_size = (3, 200, 200)
         self.output_size = (100, 100)
@@ -103,9 +104,9 @@ class ResidualBlock(nn.Module):
 
 
 class DeepSupervisionNet(nn.Module):
-    def __init__(self, batch_norm: bool = False, mode: str = "default"):
+    def __init__(self, batch_norm: bool = False, no_deep_supervision: bool = False):
         super().__init__()
-        self.mode = mode
+        self.no_deep_supervision = no_deep_supervision
         self.global_step = 0
         self.input_size = (3, 200, 200)
         self.output_size = (200, 200)
@@ -225,7 +226,7 @@ class DeepSupervisionNet(nn.Module):
                 results["final_prob"],
             ]
         else:
-            return results["prob4" if self.mode == "default" else "final_prob"]
+            return results["prob4" if self.no_deep_supervision else "final_prob"]
 
     def project(self, inputs) -> torch.Tensor:
         results = self.forward_with_intermediate_outputs(inputs)
@@ -239,12 +240,15 @@ class DownstreamNet(nn.Module):
         encoder_ckpt_dir: str = None,
         end_to_end: bool = False,
         batch_norm: bool = False,
+        no_deep_supervision: bool = True,
     ):
         super().__init__()
         self.global_step = 0
         self.input_size = (3, 200, 200)
         self.output_size = output_size
-        self.encoder = DeepSupervisionNet(batch_norm=batch_norm)
+        self.encoder = DeepSupervisionNet(
+            batch_norm=batch_norm, no_deep_supervision=no_deep_supervision
+        )
         self.end_to_end = end_to_end
         self.decoder = nn.Sequential(
             OrderedDict(

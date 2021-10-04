@@ -13,7 +13,7 @@
     "augment": 1,
     "blur": 0,
     "triplet": 0,
-    "mode": "default",
+    "deep_supervision": 0,
     "batch_normalisation": 1,
     "end_to_end": 0
 }

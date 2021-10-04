@@ -61,13 +61,17 @@ if __name__ == "__main__":
         if config["architecture"] == "densedepth":
             model = fgbg.DenseDepthNet()
         else:
-            model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
+            model = fgbg.DeepSupervisionNet(
+                batch_norm=config["batch_normalisation"],
+                no_deep_supervision=not config["deep_supervision"],
+            )
     elif config["task"] == "velocities":
         model = fgbg.DownstreamNet(
             output_size=(4,),
             encoder_ckpt_dir=config["encoder_ckpt_dir"],
             end_to_end=config["end_to_end"],
             batch_norm=config["batch_normalisation"],
+            no_deep_supervision=not config["deep_supervision"],
         )
     elif config["task"] == "waypoints":
         model = fgbg.DownstreamNet(
@@ -75,6 +79,7 @@ if __name__ == "__main__":
             encoder_ckpt_dir=config["encoder_ckpt_dir"],
             end_to_end=config["end_to_end"],
             batch_norm=config["batch_normalisation"],
+            no_deep_supervision=not config["deep_supervision"],
         )
 
     print(f"{fgbg.get_date_time_tag()} - Generate dataset")
@@ -124,6 +129,7 @@ if __name__ == "__main__":
                 triplet_loss_weight=config["triplet"],
                 num_epochs=config["number_of_epochs"],
                 learning_rate=config["learning_rate"],
+                deep_supervision=config["deep_supervision"],
             )
         else:
             fgbg.train_downstream_task(
