@@ -61,7 +61,7 @@ def create_condor_job_file(trgt, task, lrate):
             f"{PROJECT_PATH}/configs/{CONFIGS[trgt]}.json "
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
-            f"--encoder_ckpt_dir {ENCODERS[trgt]} "
+            f"--encoder_ckpt_dir {ENCODERS[trgt]} --batch_normalisation "
             f"--task {task} --number_of_epochs {NUMEPOCH} \n"
         )
 

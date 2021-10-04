@@ -57,7 +57,7 @@ def create_condor_job_file(trgt, config, lrate):
         jobfile.write(f"executable     = {INTERPRETER_PATH} \n")
         jobfile.write(
             f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
-            f"--learning_rate {lrate} --target {trgt} "
+            f"--learning_rate {lrate} --target {trgt} --batch_normalisation "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR}\n"
         )
 
