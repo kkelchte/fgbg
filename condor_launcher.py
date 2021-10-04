@@ -26,12 +26,13 @@ TARGETS = ["cone", "gate", "line"]
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        "vanilla",
-        "default",
-        "default_triplet",
-        "deep_supervision",
-        "deep_supervision_triplet",
-        "deep_supervision_blur",
+        # "vanilla",
+        # "default",
+        # "default_triplet",
+        # "deep_supervision",
+        # "deep_supervision_triplet",
+        # "deep_supervision_blur",
+        "dense_depth_default"
     ]
 ]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
@@ -57,7 +58,7 @@ def create_condor_job_file(trgt, config, lrate):
         jobfile.write(f"executable     = {INTERPRETER_PATH} \n")
         jobfile.write(
             f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
-            f"--learning_rate {lrate} --target {trgt} --batch_normalisation "
+            f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR}\n"
         )
 

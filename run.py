@@ -52,7 +52,10 @@ if __name__ == "__main__":
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if config["task"] == "pretrain":
-        model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
+        if config["architecture"] == 'densedepth':
+            model = fgbg.DenseDepthNet()
+        else:
+            model = fgbg.DeepSupervisionNet(batch_norm=config["batch_normalisation"])
     elif config["task"] == "velocities":
         model = fgbg.DownstreamNet(
             output_size=(4,),

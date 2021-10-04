@@ -4,6 +4,21 @@ from collections import OrderedDict
 import torch
 from torch import nn
 
+from dense_depth_model import Encoder, Decoder
+
+class DenseDepthNet(nn.Module):
+    def __init__(self, 
+                 checkpoint_file: str = 'data/pretrained_models/depth_net/checkpoint_model.ckpt'):
+        super(DenseDepthNet, self).__init__()
+        self.encoder = Encoder()
+        self.decoder = Decoder()
+        ckpt = torch.load(checkpoint_file)
+        self.load_state_dict(ckpt['state_dict'])
+
+    def forward(self, x):
+        return self.decoder(self.encoder(x))
+    
+
 
 class ResidualBlock(nn.Module):
     def __init__(
