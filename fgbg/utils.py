@@ -149,7 +149,7 @@ def get_date_time_tag() -> str:
 
 def draw_trajectory(filename, goal: list, trajectory: list) -> None:
     """
-    filename: path to jpg file 
+    filename: path to jpg file
     goal: list of 3 coordinates of goal
     trajectory: list of lists with drone coordinates
     """
