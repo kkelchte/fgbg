@@ -11,7 +11,7 @@ PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
 SPECS = {
     "Universe": "vanilla",
     "Requirements": (
-        "(CUDAGlobalMemoryMb >= 5900) && (CUDACapability < 8.6) "
+        "(CUDAGlobalMemoryMb >= 2900) && (CUDACapability < 8.6) "
         '&& (machine != "vladimir.esat.kuleuven.be") '
         '&& (machine != "kochab.esat.kuleuven.be") '
         '&& (machine != "oculus.esat.kuleuven.be") '
@@ -43,8 +43,8 @@ CONFIGS = [
         "triplet_fg",
         #"deep_supervision",
         #"deep_supervision_fg",
-        "dense_depth",
-        "dense_depth_fg",
+        #"dense_depth",
+        #"dense_depth_fg",
     ]
 ]
 LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
