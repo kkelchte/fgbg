@@ -20,15 +20,14 @@ parser.add_argument("--target", type=str)
 parser.add_argument("--encoder_ckpt_dir", type=str)
 parser.add_argument("--number_of_epochs", type=int)
 parser.add_argument(
-    "--end_to_end", dest="end_to_end", action="store_true", default=False
+    "--end_to_end", dest="end_to_end", action="store_true"
 )
-parser.add_argument("--evaluate", dest="evaluate", action="store_true", default=False)
-parser.add_argument("--rm", dest="rm", action="store_true", default=False)
+parser.add_argument("--evaluate", dest="evaluate", action="store_true")
+parser.add_argument("--rm", dest="rm", action="store_true")
 parser.add_argument(
     "--batch_normalisation",
     dest="batch_normalisation",
-    action="store_true",
-    default=False,
+    action="store_true"
 )
 config = vars(parser.parse_args())
 print(config)
