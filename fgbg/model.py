@@ -240,7 +240,7 @@ class DownstreamNet(nn.Module):
         encoder_ckpt_dir: str = None,
         end_to_end: bool = False,
         batch_norm: bool = False,
-        no_deep_supervision: bool = True,
+        no_deep_supervision: bool = False,
     ):
         super().__init__()
         self.global_step = 0
