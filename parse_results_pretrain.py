@@ -8,19 +8,20 @@ data_dir = "data/dtd_augmented"
 # )
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
-TARGETS = ["cone", "gate", "line"]
+# TARGETS = ["cone", "gate", "line"]
+TARGETS = ["cone", "gate"]
 COPY_REAL_IMGS = True
 LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
-    "vanilla",
+    # "vanilla",
     "default",
-    "default_triplet",
+    "default_fg",
     "deep_supervision",
-    "deep_supervision_triplet",
-    "deep_supervision_blur",
-    # "deep_supervision_triplet_blur",
+    "deep_supervision_fg",
+    # "dense_depth",
+    # "dense_depth_fg",
 ]
 output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
@@ -110,8 +111,8 @@ if LINK_BEST_MODELS:
     for target in TARGETS:
         for conf in CONFIGS:
             # create symbolic link "best" pointing to best learning rate
-            #f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
-            # mv winning lr to 'best'    
+            # f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
+            # mv winning lr to 'best'
             os.system(
                 f"mv {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
             )

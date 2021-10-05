@@ -11,13 +11,14 @@ PROJECT_PATH = "/users/visics/kkelchte/code/contrastive-learning"
 SPECS = {
     "Universe": "vanilla",
     "Requirements": (
-        "(CUDAGlobalMemoryMb >= 3900) && (CUDACapability < 8.6) "
+        "(CUDAGlobalMemoryMb >= 5900) && (CUDACapability < 8.6) "
         '&& (machine != "vladimir.esat.kuleuven.be") '
         '&& (machine != "kochab.esat.kuleuven.be") '
         '&& (machine != "oculus.esat.kuleuven.be") '
         '&& (machine != "hematite.esat.kuleuven.be") '
         '&& (machine != "bornholm.esat.kuleuven.be") '
-        '&& (machine != "egholm.esat.kuleuven.be")'
+        '&& (machine != "egholm.esat.kuleuven.be") '
+        '&& (machine != "estragon.esat.kuleuven.be") '
     ),
     "initial_dir": PROJECT_PATH,
     "priority": 1,
@@ -36,12 +37,12 @@ CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
         # "vanilla",
-        "default",
-        "default_fg",
-        # "triplet",
-        # "triplet_fg",
-        "deep_supervision",
-        "deep_supervision_fg",
+        #"default",
+        #"default_fg",
+        "triplet",
+        "triplet_fg",
+        #"deep_supervision",
+        #"deep_supervision_fg",
         "dense_depth",
         "dense_depth_fg",
     ]
