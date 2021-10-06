@@ -30,7 +30,10 @@ class DenseDepthNet(nn.Module):
             )
         # Depth is inverted to give close values a relative large value
         # Sigmoid is used to map values between 0 and 1
-        return self.sigmoid(-self.decoder(self.encoder(x)))
+        with torch.no_grad():
+            features = self.encoder(x)
+        depth_map = self.decoder(features)
+        return self.sigmoid(depth_map)
 
 
 class ResidualBlock(nn.Module):

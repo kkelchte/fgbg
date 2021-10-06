@@ -30,14 +30,12 @@ parser.add_argument(
     action="store_true"
 )
 config = vars(parser.parse_args())
-print(config)
 if config["config_file"] is not None:
     with open(config["config_file"], "r") as f:
         json_config = json.load(f)
     for k, v in config.items():
         if v is not None:
             json_config[k] = v
-            print(k, v)
     config = json_config  # update config to json's config
 pprint(config)
 
