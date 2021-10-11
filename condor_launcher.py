@@ -31,27 +31,27 @@ SPECS = {
 }
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["cone", "gate", "line"]
+TARGETS = ["gate"]
 
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        "vanilla",
-        "default",
+        #"vanilla",
+        #"default",
         "default_fg",
-        "triplet",
+        #"triplet",
         "triplet_fg",
-        "deep_supervision",
+        #"deep_supervision",
         "deep_supervision_fg",
         # "dense_depth",
         # "dense_depth_fg",
     ]
 ]
-LEARNING_RATES = [0.01, 0.001, 0.0001, 0.00001]
+LEARNING_RATES = [0.001, 0.0001, 0.00001]
 
-# TEXTURE_DIR = "data/datasets/dtd"  
-TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
+TEXTURE_DIR = "data/datasets/dtd"  
+# TEXTURE_DIR = "data/datasets/dtd_and_places"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_double_FG"
 
 SUBMIT = True
 RM_EXIST = True

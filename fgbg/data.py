@@ -142,7 +142,6 @@ class AugmentedTripletDataset(CleanDataset):
         new_background_img = load_img(
             np.random.choice(self._background_images), size=foreground.shape
         )
-        # new_background_img = np.zeros(image.shape) + np.random.uniform(0, 1)
         result["positive"] = combine_fg_bg(
             result["mask"].numpy(), foreground, new_background_img, blur=self._blur
         )
@@ -150,8 +149,8 @@ class AugmentedTripletDataset(CleanDataset):
 
         # get different line with different background for negative sample
         random_other_index = index
-        # make sure new index is at least 5 frames away
-        while abs(random_other_index - index) < 5:
+        # make sure new index is at least 10 frames away
+        while abs(random_other_index - index) < 10:
             random_other_index = np.random.randint(0, len(self))
 
         second_hsh, second_sample_index = self.hash_index_tuples[random_other_index]
