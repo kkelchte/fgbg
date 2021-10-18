@@ -60,6 +60,8 @@ class CleanDataset(TorchDataset):
 
     def load_from_file(self, img_path: str) -> torch.Tensor:
         image = np.asarray(Image.open(img_path))
+        if len(image.shape) == 2 or image.shape[-1] == 1:
+            image = np.stack([image.squeeze()] * 3, axis=-1)
         image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
         image = self.resize(image)
         return self.augment(image) if self.fg_augmentation else image
