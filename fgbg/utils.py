@@ -2,9 +2,7 @@ from datetime import datetime
 import os
 
 import cv2
-from PIL import Image
 import numpy as np
-import torch
 import matplotlib.pyplot as plt
 import imageio
 

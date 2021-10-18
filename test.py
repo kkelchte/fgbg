@@ -31,7 +31,10 @@ def test_data_loading_clean():
     dataloader = TorchDataLoader(dataset, 9, shuffle=True)
     for batch in dataloader:
         print(
-            f'mean {batch["observation"].mean()}, std {batch["observation"].std()}, min {batch["observation"].min()}, max {batch["observation"].max()}'
+            f'mean {batch["observation"].mean()}, '
+            f'std {batch["observation"].std()}, '
+            f'min {batch["observation"].min()}, '
+            f'max {batch["observation"].max()}'
         )
         grid = torchvision.utils.make_grid(batch["observation"], nrow=3)
         plt.imshow(grid.permute(1, 2, 0).numpy())
@@ -41,7 +44,7 @@ def test_data_loading_clean():
 
 def test_data_loading_real_images():
     target = "gate"
-    data_dir = f"data/datasets/bebop_real"
+    data_dir = "data/datasets/bebop_real"
 
     dataset = fgbg.ImagesDataset(
         target=target,
@@ -52,7 +55,10 @@ def test_data_loading_real_images():
     dataloader = TorchDataLoader(dataset, 9, shuffle=True)
     for batch in dataloader:
         print(
-            f'mean {batch["observation"].mean()}, std {batch["observation"].std()}, min {batch["observation"].min()}, max {batch["observation"].max()}'
+            f'mean {batch["observation"].mean()}, '
+            f'std {batch["observation"].std()}, '
+            f'min {batch["observation"].min()}, '
+            f'max {batch["observation"].max()}'
         )
         grid = torchvision.utils.make_grid(batch["observation"], nrow=3)
         plt.imshow(grid.permute(1, 2, 0).numpy())
@@ -68,12 +74,15 @@ def test_data_loading_augment():
         json_file=f"{data_dir}/data.json",
         background_images_directory="data/datasets/dtd",
         blur=True,
-        fg_augmentation=True
+        fg_augmentation=True,
     )
     dataloader = TorchDataLoader(dataset, 9, shuffle=True)
     for batch in dataloader:
         print(
-            f'mean {batch["observation"].mean()}, std {batch["observation"].std()}, min {batch["observation"].min()}, max {batch["observation"].max()}'
+            f'mean {batch["observation"].mean()}, '
+            f'std {batch["observation"].std()}, '
+            f'min {batch["observation"].min()}, '
+            f'max {batch["observation"].max()}'
         )
         grid_observation = torchvision.utils.make_grid(batch["observation"], nrow=3)
         plt.imshow(grid_observation.permute(1, 2, 0).numpy())
