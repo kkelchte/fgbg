@@ -4,37 +4,6 @@ from collections import OrderedDict
 import torch
 from torch import nn
 
-from fgbg.dense_depth_model import Encoder, Decoder
-
-
-class DenseDepthNet(nn.Module):
-    def __init__(
-        self,
-        checkpoint_file: str = "data/pretrained_models/depth_net/checkpoint_model.ckpt",
-    ):
-        super(DenseDepthNet, self).__init__()
-        self.encoder = Encoder()
-        self.decoder = Decoder()
-        ckpt = torch.load(checkpoint_file)
-        self.load_state_dict(ckpt["state_dict"])
-        print("loaded dense depth net")
-        self.global_step = 0
-        self.input_size = (3, 200, 200)
-        self.output_size = (100, 100)
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x, intermediate_outputs: bool = False):
-        if intermediate_outputs:
-            raise NotImplementedError(
-                "Deep Supervision is not implemented for dense depth network"
-            )
-        # Depth is inverted to give close values a relative large value
-        # Sigmoid is used to map values between 0 and 1
-        with torch.no_grad():
-            features = self.encoder(x)
-        depth_map = self.decoder(features)
-        return self.sigmoid(depth_map)
-
 
 class ResidualBlock(nn.Module):
     def __init__(
