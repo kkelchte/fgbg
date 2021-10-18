@@ -61,12 +61,14 @@ def test_data_loading_real_images():
 
 
 def test_data_loading_augment():
-    target = "gate"
-    data_dir = f"data/datasets/gate_cone_line/{target}"
+    target = "cone"
+    data_dir = f"data/datasets/debug_data/{target}"
     dataset = fgbg.AugmentedTripletDataset(
         hdf5_file=f"{data_dir}/data.hdf5",
         json_file=f"{data_dir}/data.json",
         background_images_directory="data/datasets/dtd",
+        blur=True,
+        fg_augmentation=True
     )
     dataloader = TorchDataLoader(dataset, 9, shuffle=True)
     for batch in dataloader:
@@ -112,4 +114,4 @@ def test_data_image_sequence():
 
 
 if __name__ == "__main__":
-    test_data_loading_clean()
+    test_data_loading_augment()

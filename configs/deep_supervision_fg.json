@@ -12,7 +12,7 @@
     "texture_directory": "data/datasets/dtd",
     "fg_augmentation": 1,
     "augment": 1,
-    "blur": 0,
+    "blur": 1,
     "triplet": 0,
     "deep_supervision": 1,
     "batch_normalisation": 1,

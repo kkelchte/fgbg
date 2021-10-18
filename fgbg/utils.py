@@ -34,58 +34,10 @@ def get_IoU(predictions, labels):
     return iou.mean()
 
 
-def generate_random_square():
-    color = (1, 1, 1)
-    img = np.zeros((128, 128, 1), np.uint8)
-    square_size = 10 + np.random.randint(int(128 / 8))
-    square_location = (
-        np.random.randint(128 - square_size),
-        np.random.randint(128 - square_size),
-    )
-    cv2.rectangle(
-        img,
-        square_location,
-        (square_location[0] + square_size, square_location[1] + square_size),
-        color,
-        -1,
-    )
-    return img
-
-
 def normalize(d: np.ndarray):
     d_min = np.amin(d)
     d_max = np.amax(d)
     return (d - d_min) / (d_max)
-
-
-def load_img(img_path: str, size: tuple = (128, 128, 3)) -> np.ndarray:
-    assert len(size) == 3
-    data = Image.open(img_path, mode="r")
-    data = cv2.resize(
-        np.asarray(data), dsize=(size[0], size[1]), interpolation=cv2.INTER_LANCZOS4
-    )
-    if size[-1] == 1:
-        data = data.mean(axis=-1, keepdims=True)
-    if len(data.shape) == 2:
-        data = np.stack([data] * size[-1], axis=-1)
-    data = np.array(data).astype(np.float32) / 255.0  # uint8 -> float32
-    return data
-
-
-def combine_fg_bg(
-    mask: np.ndarray, foreground: np.ndarray, background: np.ndarray, blur: bool = False
-) -> torch.Tensor:
-    if blur:
-        # select random odd kernel size
-        kernel_size = int(np.random.choice([1, 3, 5, 7, 9]))
-        sigma = np.random.uniform(0.1, 3)  # select deviation
-        mask = cv2.GaussianBlur(mask, (kernel_size, kernel_size), sigma)
-    mask = np.stack([mask] * foreground.shape[2], axis=-1)
-    if mask.shape != foreground.shape:
-        mask = cv2.resize(mask, foreground.shape[:-1])
-    combination = mask * foreground + (1 - mask) * background
-    combination = torch.from_numpy(combination).permute(2, 0, 1).float()
-    return combination
 
 
 def combine_mask_observation(mask: np.array, observation: np.array) -> np.array:
