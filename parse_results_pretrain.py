@@ -2,26 +2,27 @@ import os
 import shutil
 from glob import glob
 
-data_dir = "data/dtd_augmented"
+data_dir = "data/dtd_and_places_augmented"
+assert os.path.isdir(data_dir)
 # data_dir = (
 #     "/Users/kelchtermans/mount/esat/code/contrastive-learning/data/places_augmented"
 # )
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["cone", "gate"]
+TARGETS = ["cone", "gate", "line"]
 COPY_REAL_IMGS = True
 LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
-    # "vanilla",
+    "vanilla",
     "default",
     "default_fg",
     "deep_supervision",
     "deep_supervision_fg",
-    # "dense_depth",
-    # "dense_depth_fg",
+    "triplet",
+    "triplet_fg",
 ]
 output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
