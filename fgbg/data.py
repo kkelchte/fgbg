@@ -38,7 +38,9 @@ class CleanDataset(TorchDataset):
         self.resize = torch.nn.Sequential(T.Resize(self.input_size[1:]))
         self.augment = torch.nn.Sequential(
             T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
-            T.GaussianBlur(kernel_size=(1, 9), sigma=(0.1, 2)),
+        )
+        self.smoothen = torch.nn.Sequential(
+            T.GaussianBlur(kernel_size=(5), sigma=(0.1, 2)),
         )
         self.fg_augmentation = fg_augmentation
 
@@ -116,21 +118,14 @@ class AugmentedTripletDataset(CleanDataset):
             if background_images_directory is not None
             else []
         )
-        self._blur = (
-            torch.nn.Sequential(T.GaussianBlur(kernel_size=(5), sigma=(0.1, 3)))
-            if blur
-            else None
-        )
 
     def combine_fg_bg(
         self, mask: torch.Tensor, foreground: torch.Tensor, background: torch.Tensor
     ) -> torch.Tensor:
         mask = self.resize(mask)
-        if self._blur is not None:
-            mask = self._blur(mask)
         mask = torch.stack([mask.squeeze()] * 3, axis=0)
         combination = mask * foreground + (1 - mask) * background
-        return combination
+        return self.smoothen(combination)
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
         hsh, sample_index = self.hash_index_tuples[index]
