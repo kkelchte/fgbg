@@ -31,7 +31,7 @@ SPECS = {
 }
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["line", "red_line"]
+TARGETS = ["red_line"]
 
 CONFIGS = [
     f"configs/{cf}.json"
@@ -40,16 +40,16 @@ CONFIGS = [
         "default",
         "default_fg",
         "triplet",
-        # "triplet_fg",
+        "triplet_fg",
         "deep_supervision",
-        # "deep_supervision_fg",
+        "deep_supervision_fg",
     ]
 ]
 LEARNING_RATES = [0.001, 0.0001, 0.00001]
 
 # TEXTURE_DIR = "data/datasets/dtd"
 TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_no_blur"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
 
 SUBMIT = True
 RM_EXIST = True
