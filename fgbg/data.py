@@ -39,9 +39,6 @@ class CleanDataset(TorchDataset):
         self.augment = torch.nn.Sequential(
             T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
         )
-        self.smoothen = torch.nn.Sequential(
-            T.GaussianBlur(kernel_size=(5), sigma=(0.1, 2)),
-        )
         self.fg_augmentation = fg_augmentation
 
     def __len__(self) -> int:
@@ -125,10 +122,9 @@ class AugmentedTripletDataset(CleanDataset):
         mask = self.resize(mask)
         mask = torch.stack([mask.squeeze()] * 3, axis=0)
         combination = mask * foreground + (1 - mask) * background
-        return self.smoothen(combination)
+        return combination
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        hsh, sample_index = self.hash_index_tuples[index]
         result = super().__getitem__(index)
 
         foreground = result["observation"]
