@@ -41,6 +41,11 @@ class CleanDataset(TorchDataset):
         ]
         self.input_size = input_size
         self.output_size = output_size
+        self.resize = torch.nn.Sequential(T.Resize(self.input_size[1:], interpolation=0))
+        self.augment = torch.nn.Sequential(
+            T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
+        )
+        self.fg_augmentation = fg_augmentation
         self.transforms = [T.Resize(self.input_size[1:])]
         if fg_augmentation:
             self.transforms.extend(
@@ -77,19 +82,19 @@ class CleanDataset(TorchDataset):
         image = self.resize(image)
         return self.augment(image) if self.fg_augmentation else image
 
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
-        hsh, sample_index = self.hash_index_tuples[index]
-        observation = torch.as_tensor(
-            np.asarray(self.hdf5_file[hsh]["observation"][sample_index])
-        ).permute(2, 0, 1)
-        observation = self.transforms(observation)
-
-        mask = np.asarray(self.hdf5_file[hsh]["mask"][sample_index])
+    def load_mask(self, mask:np.ndarray) -> torch.Tensor:
         mask = cv2.resize(
             np.asarray(mask), dsize=self.output_size, interpolation=cv2.INTER_NEAREST
         )
-        mask = torch.from_numpy(mask).float()
+        return torch.from_numpy(mask).float()
 
+    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+        hsh, sample_index = self.hash_index_tuples[index]
+        observation = self.load_from_hdf5(
+            self.hdf5_file[hsh]["observation"][sample_index]
+        )
+        mask = self.load_from_hdf5(self.hdf5_file[hsh]["mask"][sample_index])
+        mask.squeeze_(0)
         relative_target_location = self.json_data[hsh]["relative_target_location"][
             sample_index
         ]
@@ -138,7 +143,7 @@ class AugmentedTripletDataset(CleanDataset):
     def combine_fg_bg(
         self, mask: torch.Tensor, foreground: torch.Tensor, background: torch.Tensor
     ) -> torch.Tensor:
-        mask = self.resize(mask)
+        mask = self.resize(mask.unsqueeze(0))
         mask = torch.stack([mask.squeeze()] * 3, axis=0)
         combination = mask * foreground + (1 - mask) * background
         return combination
