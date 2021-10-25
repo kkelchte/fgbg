@@ -31,7 +31,7 @@ SPECS = {
 }
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["red_line", "line"]
+TARGETS = ["line"]
 
 CONFIGS = [
     f"configs/{cf}.json"
