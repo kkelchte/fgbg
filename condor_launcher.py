@@ -45,7 +45,8 @@ CONFIGS = [
         "deep_supervision_fg",
     ]
 ]
-LEARNING_RATES = [0.001, 0.0001, 0.00001]
+# LEARNING_RATES = [0.001, 0.0001, 0.00001]
+LEARNING_RATES = [0.0001]
 
 # TEXTURE_DIR = "data/datasets/dtd"
 TEXTURE_DIR = "data/datasets/dtd_and_places"
