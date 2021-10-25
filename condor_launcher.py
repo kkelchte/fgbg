@@ -36,12 +36,12 @@ TARGETS = ["red_line", "line"]
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        "vanilla",
+        # "vanilla",
         "default",
         # "default_fg",
         # "triplet",
         # "triplet_fg",
-        "deep_supervision",
+        # "deep_supervision",
         # "deep_supervision_fg",
     ]
 ]
@@ -49,7 +49,7 @@ LEARNING_RATES = [0.0001]
 
 # TEXTURE_DIR = "data/datasets/dtd"
 TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
+OUTPUT_PATH = f"data/reproduce/00"
 
 SUBMIT = True
 RM_EXIST = True
@@ -90,9 +90,7 @@ for conf in CONFIGS:
             filename = create_condor_job_file(target, conf, lr)
             if SUBMIT:
                 print(f"submitting {filename}")
-                time.sleep(1)
                 subprocess.call(shlex.split(f"condor_submit {filename}"))
-                time.sleep(1)
     # wait 20 minutes
     # if SUBMIT and len(CONFIGS) != 1:
     #    time.sleep(10 * 60)
