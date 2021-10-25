@@ -133,6 +133,7 @@ class AugmentedTripletDataset(CleanDataset):
             if background_images_directory is not None
             else []
         )
+        self._blur = blur
 
     def combine_fg_bg(
         self, mask: torch.Tensor, foreground: torch.Tensor, background: torch.Tensor
