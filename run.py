@@ -55,13 +55,13 @@ if __name__ == "__main__":
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if config["task"] == "pretrain":
-        if config["architecture"] == "densedepth":
-            model = fgbg.DenseDepthNet()
-        else:
+        if config["architecture"] == "deepsupervision":
             model = fgbg.DeepSupervisionNet(
                 batch_norm=config["batch_normalisation"],
                 no_deep_supervision=not config["deep_supervision"],
             )
+        else:
+            raise NotImplementedError
     elif config["task"] == "velocities":
         model = fgbg.DownstreamNet(
             output_size=(4,),
@@ -153,24 +153,30 @@ if __name__ == "__main__":
         fgbg.evaluate_qualitatively_on_dataset("validation", val_set, model, tb_writer)
 
         print(f"{fgbg.get_date_time_tag()} - Evaluate on real image")
-        real_dataset = fgbg.ImagesDataset(
-            target=target,
-            dir_name=config["real_directory"],
-            input_size=model.input_size,
-            output_size=model.output_size,
-        )
-        fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
+        try:
+            real_dataset = fgbg.ImagesDataset(
+                target=target,
+                dir_name=config["real_directory"],
+                input_size=model.input_size,
+                output_size=model.output_size,
+            )
+            fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
+        except:
+            print(f"failed to evaluate on {config['real_directory']}")
         print(f"{fgbg.get_date_time_tag()} - Evaluate on real image sequence")
-        real_dataset = fgbg.ImageSequenceDataset(
-            hdf5_file=os.path.join(
-                config["real_sequence_directory"], target, "pruned_data.hdf5"
-            ),
-            input_size=model.input_size,
-            output_size=model.output_size,
-        )
-        fgbg.evaluate_qualitatively_on_sequences(
-            "eval_real_sequence", real_dataset, model, output_directory
-        )
+        try:
+            real_dataset = fgbg.ImageSequenceDataset(
+                hdf5_file=os.path.join(
+                    config["real_sequence_directory"], target, "pruned_data.hdf5"
+                ),
+                input_size=model.input_size,
+                output_size=model.output_size,
+            )
+            fgbg.evaluate_qualitatively_on_sequences(
+                "eval_real_sequence", real_dataset, model, output_directory
+            )
+        except:
+            print(f"failed to evaluate on {config['real_sequence_directory']}")
 
     print(f"{fgbg.get_date_time_tag()} - Evaluate on out-of-distribution images")
     ood_dataset = fgbg.CleanDataset(
