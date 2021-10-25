@@ -10,13 +10,13 @@ assert os.path.isdir(data_dir)
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["cone", "gate", "line"]
+TARGETS = ["red_line"]
 COPY_REAL_IMGS = True
 LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
-    "vanilla",
+    # "vanilla",
     "default",
     "default_fg",
     "deep_supervision",

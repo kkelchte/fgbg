@@ -31,21 +31,21 @@ SPECS = {
 }
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["red_line"]
+TARGETS = ["red_line", "line"]
 
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        # "vanilla",
+        "vanilla",
         "default",
-        "default_fg",
-        "triplet",
-        "triplet_fg",
+        # "default_fg",
+        # "triplet",
+        # "triplet_fg",
         "deep_supervision",
-        "deep_supervision_fg",
+        # "deep_supervision_fg",
     ]
 ]
-LEARNING_RATES = [0.001, 0.0001, 0.00001]
+LEARNING_RATES = [0.0001]
 
 # TEXTURE_DIR = "data/datasets/dtd"
 TEXTURE_DIR = "data/datasets/dtd_and_places"

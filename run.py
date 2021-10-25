@@ -24,11 +24,6 @@ parser.add_argument(
 )
 parser.add_argument("--evaluate", dest="evaluate", action="store_true")
 parser.add_argument("--rm", dest="rm", action="store_true")
-parser.add_argument(
-    "--batch_normalisation",
-    dest="batch_normalisation",
-    action="store_true"
-)
 config = vars(parser.parse_args())
 if config["config_file"] is not None:
     with open(config["config_file"], "r") as f:
@@ -55,13 +50,13 @@ if __name__ == "__main__":
     tb_writer = SummaryWriter(log_dir=output_directory)
     checkpoint_file = os.path.join(output_directory, "checkpoint_model.ckpt")
     if config["task"] == "pretrain":
-        if config["architecture"] == "densedepth":
-            model = fgbg.DenseDepthNet()
-        else:
+        if config["architecture"] == "deepsupervision":
             model = fgbg.DeepSupervisionNet(
                 batch_norm=config["batch_normalisation"],
                 no_deep_supervision=not config["deep_supervision"],
             )
+        else:
+            raise NotImplementedError
     elif config["task"] == "velocities":
         model = fgbg.DownstreamNet(
             output_size=(4,),

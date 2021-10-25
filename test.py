@@ -67,12 +67,12 @@ def test_data_loading_real_images():
 
 
 def test_data_loading_augment():
-    target = "cone"
-    data_dir = f"data/datasets/debug_data/{target}"
+    target = "red_line"
+    data_dir = f"data/datasets/gate_cone_line/{target}"
     dataset = fgbg.AugmentedTripletDataset(
         hdf5_file=f"{data_dir}/data.hdf5",
         json_file=f"{data_dir}/data.json",
-        background_images_directory="data/datasets/dtd",
+        background_images_directory="data/datasets/dtd_and_places",
         blur=True,
         fg_augmentation=True,
     )
@@ -96,6 +96,7 @@ def test_data_loading_augment():
         plt.imshow(grid_negative.permute(1, 2, 0).numpy())
         plt.title("negative")
         plt.show()
+        a = 100
         break
 
 
