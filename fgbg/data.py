@@ -70,7 +70,7 @@ class CleanDataset(TorchDataset):
         observation = self.load_from_hdf5(
             self.hdf5_file[hsh]["observation"][sample_index]
         )
-        mask = self.load_from_hdf5(self.hdf5_file[hsh]["mask"][sample_index])
+        mask = self.load_from_hdf5(self.hdf5_file[hsh]["mask"][sample_index]).squeeze()
 
         relative_target_location = self.json_data[hsh]["relative_target_location"][
             sample_index
@@ -119,7 +119,7 @@ class AugmentedTripletDataset(CleanDataset):
     def combine_fg_bg(
         self, mask: torch.Tensor, foreground: torch.Tensor, background: torch.Tensor
     ) -> torch.Tensor:
-        mask = self.resize(mask)
+        mask = self.resize(mask.unsqueeze(0))
         mask = torch.stack([mask.squeeze()] * 3, axis=0)
         combination = mask * foreground + (1 - mask) * background
         return combination
