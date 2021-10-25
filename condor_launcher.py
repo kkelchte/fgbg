@@ -31,16 +31,16 @@ SPECS = {
 }
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["red_line"]
+TARGETS = ["line", "red_line"]
 
 CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
         # "vanilla",
         "default",
-        "default_fg",
-        "triplet",
-        "triplet_fg",
+        # "default_fg",
+        # "triplet",
+        # "triplet_fg",
         "deep_supervision",
         "deep_supervision_fg",
     ]
