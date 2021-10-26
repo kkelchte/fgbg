@@ -22,25 +22,30 @@ SPECS = {
     "+RequestWalltime": int(50 * 3 * 60),
 }
 NUMEPOCH = 50
-TARGETS = ["cone", "gate", "line"]
+# TARGETS = ["cone", "gate", "line"]
+TARGETS = ["red_line", "line"]
 TASKS = ["waypoints", "velocities"]
 TEXTURE_DIR = {
     "cone": "data/datasets/dtd",
-    "line": "data/datasets/dtd",
+    "line": "data/datasets/dtd_and_places",
+    "red_line": "data/datasets/dtd_and_places",
     "gate": "data/datasets/dtd",
 }
 CONFIGS = {
     "cone": "default",
-    "line": "default_fg",
+    "line": "deep_supervision_fg",
+    "red_line": "deep_supervision_fg",
     "gate": "deep_supervision_triplet",
 }
 ENCODERS = {
     "cone": "data/dtd_and_places_augmented/default/cone/best",
-    "line": "data/dtd_and_fg_augmented/pretrain/default/line/best",
+    "line": "data/dtd_and_fg_augmented/pretrain/deep_supervision_fg/line/best",
+    "red_line": "data/dtd_and_fg_augmented/pretrain/deep_supervision_fg/red_line/best",
     "gate": "data/dtd_augmented/deep_supervision_triplet/gate/best",
 }
 
-LEARNING_RATES = [0.001, 0.0001, 0.00001]
+# LEARNING_RATES = [0.001, 0.0001, 0.00001]
+LEARNING_RATES = [0.00001]
 SUBMIT = True
 RM_EXIST = True
 
@@ -61,7 +66,7 @@ def create_condor_job_file(trgt, task, lrate):
             f"{PROJECT_PATH}/configs/{CONFIGS[trgt]}.json "
             f"--learning_rate {lrate} --target {trgt} "
             f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
-            f"--encoder_ckpt_dir {ENCODERS[trgt]} --batch_normalisation "
+            f"--encoder_ckpt_dir {ENCODERS[trgt]} "
             f"--task {task} --number_of_epochs {NUMEPOCH} \n"
         )
 

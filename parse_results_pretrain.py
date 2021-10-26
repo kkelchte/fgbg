@@ -10,19 +10,19 @@ assert os.path.isdir(data_dir)
 # data_dir = "/Users/kelchtermans/mount/opal/contrastive_learning/dtd_augment"
 
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["cone", "gate", "line"]
+TARGETS = ["red_line", "line"]
 COPY_REAL_IMGS = True
 LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
-    "vanilla",
+    #"vanilla",
     "default",
-    "default_fg",
+    #"default_fg",
     "deep_supervision",
     "deep_supervision_fg",
-    "triplet",
-    "triplet_fg",
+    #"triplet",
+    #"triplet_fg",
 ]
 output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
@@ -74,7 +74,7 @@ if WRITE_TABLE:
     print("WRITE_TABLE")
     # Print table and store to file:
     overview_file = open(output_dir + "/overview_table_pretrain.txt", "w")
-    for target in ["cone", "gate", "line"]:
+    for target in TARGETS:
         msg = f"{target} & & \\\\"
         print(msg)
         overview_file.write(msg + "\n")
