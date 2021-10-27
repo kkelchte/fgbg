@@ -16,13 +16,13 @@ LINK_BEST_MODELS = True
 WRITE_TABLE = True
 
 CONFIGS = [
-    #"vanilla",
+    # "vanilla",
     "default",
-    #"default_fg",
+    # "default_fg",
     "deep_supervision",
     "deep_supervision_fg",
-    #"triplet",
-    #"triplet_fg",
+    # "triplet",
+    # "triplet_fg",
 ]
 output_dir = os.path.join(data_dir, "overview")
 os.makedirs(output_dir, exist_ok=True)
@@ -62,7 +62,7 @@ for target in TARGETS:
             for lrp in lr_paths
         }
         validation_losses = {
-            lrp: values[lrp]["out-of-distribution_bce_loss_avg"] for lrp in lr_paths
+            lrp: values[lrp]["validation_bce_loss_avg"] for lrp in lr_paths
         }
         best_lrp = [
             k for k, v in sorted(validation_losses.items(), key=lambda item: item[1])
@@ -74,8 +74,11 @@ if WRITE_TABLE:
     print("WRITE_TABLE")
     # Print table and store to file:
     overview_file = open(output_dir + "/overview_table_pretrain.txt", "w")
+    overview_file.write("& IoU (+-std) & Weighted BCELoss (+-std) \\\\ \n")
     for target in TARGETS:
-        msg = f"{target} & & \\\\"
+        overview_file.write("\\hline \n")
+        msg = "\\textbf{"+target.replace('_', ' ')+"} & & \\\\"
+        # msg = "\multicolumn{3}{c}{" + target + "}\\\\"
         print(msg)
         overview_file.write(msg + "\n")
         for conf in CONFIGS:
@@ -83,10 +86,8 @@ if WRITE_TABLE:
                 msg = f'{os.path.basename(conf).replace("_", " ")} '
                 msg += f'&  {overview_results[target][conf]["validation_iou_avg"]} '
                 msg += f'(±{overview_results[target][conf]["validation_iou_std"]}) & '
-                msg += (
-                    f'{overview_results[target][conf]["out-of-distribution_ious_avg"]} '
-                )
-                msg += f'(±{overview_results[target][conf]["out-of-distribution_ious_std"]})'
+                msg += f'{overview_results[target][conf]["validation_bce_loss_avg"]} '
+                msg += f'(±{overview_results[target][conf]["validation_bce_loss_std"]})'
                 msg += " \\\\"
                 print(msg)
                 overview_file.write(msg + "\n")
@@ -111,12 +112,13 @@ if LINK_BEST_MODELS:
     print("LINK_BEST_MODELS")
     for target in TARGETS:
         for conf in CONFIGS:
-            # create symbolic link "best" pointing to best learning rate
-            # f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
-            # mv winning lr to 'best'
-            os.system(
-                f"mv {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
-            )
-            msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
-            print(msg)
+            if not os.path.isdir(f"{os.path.dirname(winning_lrs[target][conf])}/best"):
+                # create symbolic link "best" pointing to best learning rate
+                # f"ln -s {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
+                # mv winning lr to 'best'
+                os.system(
+                    f"mv {os.path.join(os.getcwd(), winning_lrs[target][conf])} {os.path.dirname(winning_lrs[target][conf])}/best"
+                )
+                msg = f"{target} - {conf} - {winning_lrs[target][conf]}"
+                print(msg)
 print("finished")

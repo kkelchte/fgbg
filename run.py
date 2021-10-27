@@ -178,21 +178,22 @@ if __name__ == "__main__":
         except:
             print(f"failed to evaluate on {config['real_sequence_directory']}")
 
-    print(f"{fgbg.get_date_time_tag()} - Evaluate on out-of-distribution images")
-    ood_dataset = fgbg.CleanDataset(
-        hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
-        json_file=os.path.join(config["ood_directory"], target, "data.json"),
-        fg_augmentation=False,
-        input_size=model.input_size,
-        output_size=model.output_size,
-    )
-    if config["task"] == "pretrain":
-        fgbg.evaluate_qualitatively_on_dataset(
-            "out-of-distribution", ood_dataset, model, tb_writer
+    if config["ood_directory"] != "":
+        print(f"{fgbg.get_date_time_tag()} - Evaluate on out-of-distribution images")
+        ood_dataset = fgbg.CleanDataset(
+            hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
+            json_file=os.path.join(config["ood_directory"], target, "data.json"),
+            fg_augmentation=False,
+            input_size=model.input_size,
+            output_size=model.output_size,
         )
-    fgbg.evaluate_quantitatively_on_dataset(
-        "out-of-distribution", ood_dataset, model, tb_writer, config["task"]
-    )
+        if config["task"] == "pretrain":
+            fgbg.evaluate_qualitatively_on_dataset(
+                "out-of-distribution", ood_dataset, model, tb_writer
+            )
+        fgbg.evaluate_quantitatively_on_dataset(
+            "out-of-distribution", ood_dataset, model, tb_writer, config["task"]
+        )
 
     print(f"{fgbg.get_date_time_tag()} - Finished")
     os.system(f"touch {output_directory}/FINISHED")

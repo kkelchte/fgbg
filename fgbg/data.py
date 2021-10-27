@@ -5,9 +5,11 @@ from PIL import Image
 import json
 import h5py
 import numpy as np
+from numpy.lib.type_check import _nan_to_num_dispatcher
 import torch
 from torch.utils.data import Dataset as TorchDataset
 import torchvision.transforms as T
+from torchvision.transforms.transforms import GaussianBlur
 
 
 class CleanDataset(TorchDataset):
@@ -115,6 +117,7 @@ class AugmentedTripletDataset(CleanDataset):
             if background_images_directory is not None
             else []
         )
+        self._blur = torch.nn.Sequential(T.GaussianBlur(9, sigma=(0.1, 3))) if blur else None
 
     def combine_fg_bg(
         self, mask: torch.Tensor, foreground: torch.Tensor, background: torch.Tensor
@@ -122,7 +125,7 @@ class AugmentedTripletDataset(CleanDataset):
         mask = self.resize(mask.unsqueeze(0))
         mask = torch.stack([mask.squeeze()] * 3, axis=0)
         combination = mask * foreground + (1 - mask) * background
-        return combination
+        return self._blur(combination) if self._blur is not None else combination
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
         result = super().__getitem__(index)
