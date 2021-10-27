@@ -39,8 +39,8 @@ CONFIGS = {
 }
 ENCODERS = {
     "cone": "data/dtd_and_places_augmented/default/cone/best",
-    "line": "data/dtd_and_fg_augmented/pretrain/deep_supervision_fg/line/best",
-    "red_line": "data/dtd_and_fg_augmented/pretrain/deep_supervision_fg/red_line/best",
+    "line": "data/dtd_and_places_augmented/pretrain/deep_supervision_fg/line/best",
+    "red_line": "data/dtd_and_places_augmented/pretrain/deep_supervision_fg/red_line/best",
     "gate": "data/dtd_augmented/deep_supervision_triplet/gate/best",
 }
 
