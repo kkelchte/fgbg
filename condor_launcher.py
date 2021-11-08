@@ -30,9 +30,9 @@ SPECS = {
     "+RequestWalltime": int(100 * 7 * 60 * 3),
 }
 
-TARGETS = ["cone", "gate"]
-TARGETS = ["line", "red_line"]
-TARGETS = ["red_line"]
+# TARGETS = ["cone", "gate"]
+# TARGETS = ["line", "red_line"]
+TARGETS = ["gate"]
 
 CONFIGS = [
     f"configs/{cf}.json"
@@ -43,17 +43,18 @@ CONFIGS = [
         # "triplet",
         # "triplet_fg",
         # "deep_supervision",
-        # "deep_supervision_fg",
-        # "deep_supervision_fg_blur",
+        "deep_supervision_fg",
         "deep_supervision_fg_bn",
+        "deep_supervision_fg_triplet",
+        "deep_supervision_fg_blur",
     ]
 ]
 # LEARNING_RATES = [0.001, 0.0001, 0.00001]
 LEARNING_RATES = [0.0001]
 
-# TEXTURE_DIR = "data/datasets/dtd"
-TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_BN"
+TEXTURE_DIR = "data/datasets/dtd"
+# TEXTURE_DIR = "data/datasets/dtd_and_places"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
 
 SUBMIT = True
 RM_EXIST = True

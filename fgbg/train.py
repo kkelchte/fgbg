@@ -186,12 +186,12 @@ def train_autoencoder(
             global_step=autoencoder.global_step,
         )
         tb_writer.add_scalar(
-            "train/iou/autoencoder" + ("" if not triplet_loss_weight else "_trplt"),
+            "train/iou/autoencoder",
             np.mean(ious["train"]),
             global_step=autoencoder.global_step,
         )
         tb_writer.add_scalar(
-            "val/iou/autoencoder" + ("" if not triplet_loss_weight else "_trplt"),
+            "val/iou/autoencoder",
             np.mean(ious["val"]),
             global_step=autoencoder.global_step,
         )
