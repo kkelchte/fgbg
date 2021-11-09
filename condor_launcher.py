@@ -46,7 +46,6 @@ CONFIGS = [
         "deep_supervision_fg",
         "deep_supervision_fg_bn",
         "deep_supervision_fg_triplet",
-        "deep_supervision_fg_blur",
     ]
 ]
 # LEARNING_RATES = [0.001, 0.0001, 0.00001]
@@ -54,7 +53,7 @@ LEARNING_RATES = [0.0001]
 
 TEXTURE_DIR = "data/datasets/dtd"
 # TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_reproduce_good_gate_model"
 
 SUBMIT = True
 RM_EXIST = True

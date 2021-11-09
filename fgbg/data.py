@@ -39,7 +39,9 @@ class CleanDataset(TorchDataset):
         self.output_size = output_size
         self.resize = torch.nn.Sequential(T.Resize(self.input_size[1:]))
         self.augment = torch.nn.Sequential(
-            T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
+#            T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
+            T.ColorJitter(brightness=0.5, hue=0.3),
+            T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2)),
         )
         self.fg_augmentation = fg_augmentation
 
