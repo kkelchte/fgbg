@@ -23,7 +23,8 @@ SPECS = {
 }
 NUMEPOCH = 50
 # TARGETS = ["cone", "gate", "line"]
-TARGETS = ["red_line", "line"]
+TARGETS = ["gate"]
+# TARGETS = ["red_line", "line"]
 TASKS = ["waypoints", "velocities"]
 TEXTURE_DIR = {
     "cone": "data/datasets/dtd",
@@ -35,13 +36,13 @@ CONFIGS = {
     "cone": "default",
     "line": "deep_supervision_fg",
     "red_line": "deep_supervision_fg",
-    "gate": "deep_supervision_triplet",
+    "gate": "deep_supervision_fg",
 }
 ENCODERS = {
     "cone": "data/dtd_and_places_augmented/default/cone/best",
     "line": "data/dtd_and_places_augmented/pretrain/deep_supervision_fg/line/best",
     "red_line": "data/dtd_and_places_augmented/pretrain/deep_supervision_fg/red_line/best",
-    "gate": "data/dtd_augmented/deep_supervision_triplet/gate/best",
+    "gate": "data/dtd_augmented/pretrain/deep_supervision_fg/gate/best",
 }
 
 # LEARNING_RATES = [0.001, 0.0001, 0.00001]
