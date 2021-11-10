@@ -24,11 +24,6 @@ parser.add_argument(
 )
 parser.add_argument("--evaluate", dest="evaluate", action="store_true")
 parser.add_argument("--rm", dest="rm", action="store_true")
-parser.add_argument(
-    "--batch_normalisation",
-    dest="batch_normalisation",
-    action="store_true"
-)
 config = vars(parser.parse_args())
 if config["config_file"] is not None:
     with open(config["config_file"], "r") as f:
