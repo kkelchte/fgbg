@@ -1,4 +1,4 @@
-import os
+import os, sys
 from argparse import ArgumentParser
 import shutil
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         dataset = fgbg.CleanDataset(
             hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["training_directory"], target, "data.json"),
-            fg_augmentation=bool(config["fg_augmentation"]),
+            fg_augmentation=config["fg_augmentation"],
             input_size=model.input_size,
             output_size=model.output_size,
         )
@@ -88,8 +88,8 @@ if __name__ == "__main__":
             hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["training_directory"], target, "data.json"),
             background_images_directory=config["texture_directory"],
-            blur=bool(config["blur"]),
-            fg_augmentation=bool(config["fg_augmentation"]),
+            blur=config["combined_blur"],
+            fg_augmentation=config["fg_augmentation"],
             input_size=model.input_size,
             output_size=model.output_size,
         )
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         ood_dataset = fgbg.CleanDataset(
             hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["ood_directory"], target, "data.json"),
-            fg_augmentation=False,
+            fg_augmentation={},
             input_size=model.input_size,
             output_size=model.output_size,
         )

@@ -17,7 +17,7 @@ class CleanDataset(TorchDataset):
         self,
         hdf5_file: str,
         json_file: str,
-        fg_augmentation: bool = False,
+        fg_augmentation: dict = {},
         input_size: tuple = (3, 200, 200),
         output_size: tuple = (200, 200),
     ):
@@ -39,12 +39,14 @@ class CleanDataset(TorchDataset):
         self.output_size = output_size
         self.resize = torch.nn.Sequential(T.Resize(self.input_size[1:]))
         self.augment = torch.nn.Sequential(
-#            T.ColorJitter(brightness=0.1, hue=0.1, saturation=0.1, contrast=0.1),
-            T.ColorJitter(brightness=0.5, hue=0.3),
+            T.ColorJitter(
+                brightness=fg_augmentation['fg_color']['brightness'], 
+                hue=fg_augmentation['fg_color']['hue'], 
+                saturation=fg_augmentation['fg_color']['saturation'], 
+                contrast=fg_augmentation['fg_color']['hue']),
             T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2)),
-        )
-        self.fg_augmentation = fg_augmentation
-
+        ) if fg_augmentation != {} else None
+        
     def __len__(self) -> int:
         return len(self.hash_index_tuples)
 
@@ -57,7 +59,7 @@ class CleanDataset(TorchDataset):
         image = self.resize(image)
         return (
             self.augment(image)
-            if self.fg_augmentation and image.shape[0] == 3
+            if self.augment is not None and image.shape[0] == 3
             else image
         )
 
@@ -67,7 +69,7 @@ class CleanDataset(TorchDataset):
             image = np.stack([image.squeeze()] * 3, axis=-1)
         image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
         image = self.resize(image)
-        return self.augment(image) if self.fg_augmentation else image
+        return self.augment(image) if self.augment is not None else image
 
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
         hsh, sample_index = self.hash_index_tuples[index]
@@ -98,8 +100,8 @@ class AugmentedTripletDataset(CleanDataset):
         hdf5_file: str,
         json_file: str,
         background_images_directory: str,
-        blur: bool = False,
-        fg_augmentation: bool = False,
+        blur: dict = {},
+        fg_augmentation: dict = {},
         input_size: tuple = (3, 200, 200),
         output_size: tuple = (200, 200),
     ):
