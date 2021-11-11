@@ -2,12 +2,11 @@
     "target": "cone",
     "learning_rate": 0.01,
     "batch_size": 10,
-    "number_of_epochs": 1,
+    "number_of_epochs": 50,
     "task": "pretrain",
-    "architecture": "densedepth",
-    "encoder_ckpt_dir": "data/best_encoders/cone",
-    "training_directory": "data/datasets/debug_data",
-    "ood_directory": "data/datasets/debug_data",
+    "architecture": "deepsupervision",
+    "training_directory": "data/datasets/gate_cone_line",
+    "ood_directory": "",
     "real_directory": "data/datasets/bebop_real",
     "real_sequence_directory": "data/datasets/bebop_real_movies",
     "texture_directory": "data/datasets/dtd",
@@ -18,20 +17,16 @@
             "max_sigma": 2
         },
         "fg_color": {
-            "brightness": 0.5,
-            "hue": 0.5,
+            "brightness": 0.1,
+            "hue": 0.1,
             "saturation": 0.1,
             "contrast": 0.1
         }
     },
-    "combined_blur": {
-        "kernel": 5,
-        "min_sigma": 0.1,
-        "max_sigma": 2
-    },
+    "combined_blur": {},
     "augment": 1,
     "triplet": 0,
-    "deep_supervision": 0,
-    "batch_normalisation": 0,
+    "deep_supervision": 1,
+    "batch_normalisation": 1,
     "end_to_end": 0
 }

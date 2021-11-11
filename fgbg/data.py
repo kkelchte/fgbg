@@ -38,15 +38,31 @@ class CleanDataset(TorchDataset):
         self.input_size = input_size
         self.output_size = output_size
         self.resize = torch.nn.Sequential(T.Resize(self.input_size[1:]))
-        self.augment = torch.nn.Sequential(
-            T.ColorJitter(
-                brightness=fg_augmentation['fg_color']['brightness'], 
-                hue=fg_augmentation['fg_color']['hue'], 
-                saturation=fg_augmentation['fg_color']['saturation'], 
-                contrast=fg_augmentation['fg_color']['hue']),
-            T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2)),
-        ) if fg_augmentation != {} else None
-        
+        if fg_augmentation is not None:
+            augmentation_transforms = []
+            if fg_augmentation["fg_blur"] != {}:
+                augmentation_transforms.append(
+                    T.ColorJitter(
+                        brightness=fg_augmentation["fg_color"]["brightness"],
+                        hue=fg_augmentation["fg_color"]["hue"],
+                        saturation=fg_augmentation["fg_color"]["saturation"],
+                        contrast=fg_augmentation["fg_color"]["hue"],
+                    )
+                )
+            if fg_augmentation["fg_blur"]  != {}:
+                augmentation_transforms.append(
+                    T.GaussianBlur(
+                        kernel_size=fg_augmentation["fg_blur"]["kernel"],
+                        sigma=(
+                            fg_augmentation["fg_blur"]["min_sigma"],
+                            fg_augmentation["fg_blur"]["max_sigma"],
+                        ),
+                    ),
+                )
+            self.augment = torch.nn.Sequential(*augmentation_transforms)
+        else:
+            self.augment = None
+
     def __len__(self) -> int:
         return len(self.hash_index_tuples)
 
@@ -100,7 +116,7 @@ class AugmentedTripletDataset(CleanDataset):
         hdf5_file: str,
         json_file: str,
         background_images_directory: str,
-        blur: dict = {},
+        combined_blur: dict = {},
         fg_augmentation: dict = {},
         input_size: tuple = (3, 200, 200),
         output_size: tuple = (200, 200),
@@ -121,7 +137,16 @@ class AugmentedTripletDataset(CleanDataset):
             if background_images_directory is not None
             else []
         )
-        self._blur = torch.nn.Sequential(T.GaussianBlur(9, sigma=(0.1, 3))) if blur else None
+        self._blur = (
+            torch.nn.Sequential(
+                T.GaussianBlur(
+                    kernel_size=combined_blur["kernel"],
+                    sigma=(combined_blur["min_sigma"], combined_blur["max_sigma"]),
+                )
+            )
+            if combined_blur != {}
+            else None
+        )
 
     def combine_fg_bg(
         self, mask: torch.Tensor, foreground: torch.Tensor, background: torch.Tensor

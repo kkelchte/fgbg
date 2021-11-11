@@ -32,7 +32,7 @@ SPECS = {
 
 # TARGETS = ["cone", "gate"]
 # TARGETS = ["line", "red_line"]
-TARGETS = ["gate"]
+TARGETS = ["red_line", "gate"]
 
 CONFIGS = [
     f"configs/{cf}.json"
@@ -42,18 +42,19 @@ CONFIGS = [
         # "default_fg",
         # "triplet",
         # "triplet_fg",
-        # "deep_supervision",
-        "deep_supervision_fg",
-        "deep_supervision_fg_bn",
-        "deep_supervision_fg_triplet",
+        "deep_supervision",
+        "deep_supervision_reference",
+        "deep_supervision_more_color",
+        "deep_supervision_add_fg_blur",
+        "deep_supervision_add_combined_blur",
     ]
 ]
 # LEARNING_RATES = [0.001, 0.0001, 0.00001]
 LEARNING_RATES = [0.0001]
 
-TEXTURE_DIR = "data/datasets/dtd"
-# TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_reproduce_good_gate_model"
+# TEXTURE_DIR = "data/datasets/dtd"
+TEXTURE_DIR = "data/datasets/dtd_and_places"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_bn"
 
 SUBMIT = True
 RM_EXIST = True

@@ -88,7 +88,7 @@ if __name__ == "__main__":
             hdf5_file=os.path.join(config["training_directory"], target, "data.hdf5"),
             json_file=os.path.join(config["training_directory"], target, "data.json"),
             background_images_directory=config["texture_directory"],
-            blur=config["combined_blur"],
+            combined_blur=config["combined_blur"],
             fg_augmentation=config["fg_augmentation"],
             input_size=model.input_size,
             output_size=model.output_size,
