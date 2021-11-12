@@ -32,7 +32,7 @@ SPECS = {
 
 # TARGETS = ["cone", "gate"]
 # TARGETS = ["line", "red_line"]
-TARGETS = ["red_line", "gate"]
+TARGETS = ["red_line"]
 
 CONFIGS = [
     f"configs/{cf}.json"
@@ -54,7 +54,7 @@ LEARNING_RATES = [0.0001]
 
 # TEXTURE_DIR = "data/datasets/dtd"
 TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_bn"
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_no_bn"
 
 SUBMIT = True
 RM_EXIST = True
