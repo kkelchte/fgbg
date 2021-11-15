@@ -42,11 +42,11 @@ CONFIGS = [
         # "default_fg",
         # "triplet",
         # "triplet_fg",
-        "deep_supervision",
-        "deep_supervision_reference",
-        "deep_supervision_more_color",
-        "deep_supervision_add_fg_blur",
-        "deep_supervision_add_combined_blur",
+        # "deep_supervision",
+        "deep_supervision_fg",
+        "deep_supervision_fg_bn",
+        # "deep_supervision_fg_triplet",
+        # "deep_supervision_fg_blur",
     ]
 ]
 # LEARNING_RATES = [0.001, 0.0001, 0.00001]
@@ -54,7 +54,11 @@ LEARNING_RATES = [0.0001]
 
 # TEXTURE_DIR = "data/datasets/dtd"
 TEXTURE_DIR = "data/datasets/dtd_and_places"
+<<<<<<< HEAD
 OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_no_bn"
+=======
+OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_redo"
+>>>>>>> main
 
 SUBMIT = True
 RM_EXIST = True
