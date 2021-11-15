@@ -40,7 +40,7 @@ class CleanDataset(TorchDataset):
         self.resize = torch.nn.Sequential(T.Resize(self.input_size[1:]))
         if fg_augmentation is not None:
             augmentation_transforms = []
-            if fg_augmentation["fg_blur"] != {}:
+            if fg_augmentation["fg_color"] != {}:
                 augmentation_transforms.append(
                     T.ColorJitter(
                         brightness=fg_augmentation["fg_color"]["brightness"],
