@@ -54,11 +54,7 @@ LEARNING_RATES = [0.0001]
 
 # TEXTURE_DIR = "data/datasets/dtd"
 TEXTURE_DIR = "data/datasets/dtd_and_places"
-<<<<<<< HEAD
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_no_bn"
-=======
 OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_redo"
->>>>>>> main
 
 SUBMIT = True
 RM_EXIST = True
