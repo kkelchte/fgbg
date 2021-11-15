@@ -15,8 +15,8 @@
         "fg_color": {
             "brightness": 0.5,
             "hue": 0.3,
-            "saturation": 0.3,
-            "contrast": 0.3
+            "saturation": 0,
+            "contrast": 0
         }
     },
     "combined_blur": {},

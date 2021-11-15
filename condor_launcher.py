@@ -30,43 +30,32 @@ SPECS = {
     "+RequestWalltime": int(100 * 7 * 60 * 3),
 }
 
-# TARGETS = ["cone", "gate"]
-# TARGETS = ["line", "red_line"]
-TARGETS = ["red_line"]
-
-CONFIGS = [
+RED_LINE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        # "vanilla",
-        # "default",
-        # "default_fg",
-        # "triplet",
-        # "triplet_fg",
-        # "deep_supervision",
-        "deep_supervision_fg",
-        "deep_supervision_fg_bn",
-        # "deep_supervision_fg_triplet",
-        # "deep_supervision_fg_blur",
+        "deep_supervision_reference",
+        "deep_supervision_reference_bn",
+        "deep_supervision_only_brightness_bn",
     ]
 ]
-# LEARNING_RATES = [0.001, 0.0001, 0.00001]
-LEARNING_RATES = [0.0001]
+GATE_CONFIGS = [
+    f"configs/{cf}.json"
+    for cf in [
+        "deep_supervision_reference_bn",
+        "deep_supervision_only_brightness_bn",
+        "deep_supervision_add_fg_blur_bn",
+        "deep_supervision_add_combined_blur_bn"
+    ]
+]
 
-# TEXTURE_DIR = "data/datasets/dtd"
+
 TEXTURE_DIR = "data/datasets/dtd_and_places"
-OUTPUT_PATH = f"data/{os.path.basename(TEXTURE_DIR)}_augmented_redo"
-
 SUBMIT = True
 RM_EXIST = True
 
-print("TARGETS: ", TARGETS)
-print("CONFIGS: ", CONFIGS)
-print("LEARNING_RATES: ", LEARNING_RATES)
-
-
 def create_condor_job_file(trgt, config, lrate):
     config_tag = os.path.basename(config[:-5])
-    output_dir = f"{OUTPUT_PATH}/pretrain/{config_tag}/{trgt}/{lrate}"
+    output_dir = f"data/{trgt}/{config_tag}"
     if RM_EXIST and os.path.isdir(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir)
@@ -88,18 +77,8 @@ def create_condor_job_file(trgt, config, lrate):
 
     return os.path.join(output_dir, "condor.job")
 
-
-for conf in CONFIGS:
-    for target in TARGETS:
-        for lr in LEARNING_RATES:
-            filename = create_condor_job_file(target, conf, lr)
-            if SUBMIT:
-                print(f"submitting {filename}")
-                time.sleep(1)
-                subprocess.call(shlex.split(f"condor_submit {filename}"))
-                time.sleep(1)
-    # wait 20 minutes
-    # if SUBMIT and len(CONFIGS) != 1:
-    #    time.sleep(10 * 60)
+for conf in RED_LINE_CONFIGS:
+    filename =  create_condor_job_file('red_line', conf, 0.0001)
+    subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 print("finished")
