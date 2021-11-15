@@ -33,18 +33,19 @@ SPECS = {
 RED_LINE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        "deep_supervision_reference",
-        "deep_supervision_reference_bn",
-        "deep_supervision_only_brightness_bn",
+        # "deep_supervision_reference",
+        # "deep_supervision_reference",
+        # "deep_supervision_reference_bn",
+        "deep_supervision_only_brightness",
     ]
 ]
 GATE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        "deep_supervision_reference_bn",
-        "deep_supervision_only_brightness_bn",
-        "deep_supervision_add_fg_blur_bn",
-        "deep_supervision_add_combined_blur_bn",
+        # "deep_supervision_reference_bn",
+        "deep_supervision_hue_and_brightness_bn",
+        # "deep_supervision_add_fg_blur_bn",
+        # "deep_supervision_add_combined_blur_bn",
     ]
 ]
 
@@ -79,9 +80,9 @@ def create_condor_job_file(trgt, config, lrate):
     return os.path.join(output_dir, "condor.job")
 
 
-# for conf in RED_LINE_CONFIGS:
-#     filename =  create_condor_job_file('red_line', conf, 0.0001)
-#     subprocess.call(shlex.split(f"condor_submit {filename}"))
+for conf in RED_LINE_CONFIGS:
+    filename =  create_condor_job_file('red_line', conf, 0.0001)
+    subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 for conf in GATE_CONFIGS:
     filename = create_condor_job_file("gate", conf, 0.0001)
