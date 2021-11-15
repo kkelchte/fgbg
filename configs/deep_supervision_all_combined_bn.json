@@ -9,7 +9,7 @@
     "ood_directory": "",
     "real_directory": "data/datasets/bebop_real",
     "real_sequence_directory": "data/datasets/bebop_real_movies",
-    "texture_directory": "data/datasets/dtd",
+    "texture_directory": "data/datasets/dtd_and_places",
     "fg_augmentation": {
         "fg_blur": {
             "kernel": 9,

@@ -30,6 +30,19 @@ SPECS = {
     "+RequestWalltime": int(100 * 7 * 60 * 3),
 }
 
+CONE_CONFIGS = [
+    f"configs/{cf}.json"
+    for cf in [
+        # "deep_supervision_reference",
+        # "deep_supervision_reference",
+        # "deep_supervision_reference_bn",
+        "default",
+        "default_fg",
+        "default_bn",
+        # "deep_supervision_only_brightness",
+    ]
+]
+
 RED_LINE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
@@ -49,8 +62,6 @@ GATE_CONFIGS = [
     ]
 ]
 
-
-TEXTURE_DIR = "data/datasets/dtd_and_places"
 SUBMIT = True
 RM_EXIST = True
 
@@ -66,7 +77,7 @@ def create_condor_job_file(trgt, config, lrate):
         jobfile.write(
             f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
             f"--learning_rate {lrate} --target {trgt} "
-            f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR}\n"
+            f"--output_dir {output_dir}\n"
         )
 
         for key, value in SPECS.items():
@@ -80,12 +91,16 @@ def create_condor_job_file(trgt, config, lrate):
     return os.path.join(output_dir, "condor.job")
 
 
-for conf in RED_LINE_CONFIGS:
-    filename =  create_condor_job_file('red_line', conf, 0.0001)
-    subprocess.call(shlex.split(f"condor_submit {filename}"))
+# for conf in RED_LINE_CONFIGS:
+#     filename = create_condor_job_file("red_line", conf, 0.0001)
+#     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
-for conf in GATE_CONFIGS:
-    filename = create_condor_job_file("gate", conf, 0.0001)
+# for conf in GATE_CONFIGS:
+#     filename = create_condor_job_file("gate", conf, 0.0001)
+#     subprocess.call(shlex.split(f"condor_submit {filename}"))
+
+for conf in CONE_CONFIGS:
+    filename = create_condor_job_file("cone", conf, 0.0001)
     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 

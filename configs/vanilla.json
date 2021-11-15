@@ -9,7 +9,7 @@
     "ood_directory": "data/datasets/gate_cone_line_realistic",
     "real_directory": "data/datasets/bebop_real",
     "real_sequence_directory": "data/datasets/bebop_real_movies",
-    "texture_directory": "data/datasets/dtd",
+    "texture_directory": "data/datasets/dtd_and_places",
     "fg_augmentation": {
         "fg_blur": {
             "kernel": 9,
@@ -17,8 +17,8 @@
             "max_sigma": 2
         },
         "fg_color": {
-            "brightness": 0.5,
-            "hue": 0.5,
+            "brightness": 0.1,
+            "hue": 0.1,
             "saturation": 0.1,
             "contrast": 0.1
         }
