@@ -36,8 +36,8 @@ CONE_CONFIGS = [
         # "deep_supervision_reference",
         # "deep_supervision_reference",
         # "deep_supervision_reference_bn",
-        "default",
-        "default_fg",
+        # "default",
+        # "default_fg_bn",
         "default_bn",
         # "deep_supervision_only_brightness",
     ]
@@ -56,9 +56,10 @@ GATE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
         # "deep_supervision_reference_bn",
-        "deep_supervision_hue_and_brightness_bn",
-        # "deep_supervision_add_fg_blur_bn",
-        # "deep_supervision_add_combined_blur_bn",
+        # "deep_supervision_hue_and_brightness_bn",
+        "deep_supervision_add_fg_blur_bn",
+        "deep_supervision_add_combined_blur_bn",
+        "deep_supervision_comb_blur_brightness_hue_bn",
     ]
 ]
 
@@ -100,7 +101,7 @@ def create_condor_job_file(trgt, config, lrate):
 #     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 for conf in CONE_CONFIGS:
-    filename = create_condor_job_file("cone", conf, 0.0001)
+    filename = create_condor_job_file("cone", conf, 0.00001)
     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 
