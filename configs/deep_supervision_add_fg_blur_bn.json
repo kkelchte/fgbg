@@ -27,6 +27,6 @@
     "augment": 1,
     "triplet": 0,
     "deep_supervision": 1,
-    "batch_normalisation": 0,
+    "batch_normalisation": 1,
     "end_to_end": 0
 }
