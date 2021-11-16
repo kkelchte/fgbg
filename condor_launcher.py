@@ -43,7 +43,6 @@ RED_LINE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
         # "deep_supervision_reference",
-        # "deep_supervision_reference",
         # "deep_supervision_reference_bn",
         "deep_supervision_only_brightness",
     ]
@@ -59,6 +58,7 @@ GATE_CONFIGS = [
     ]
 ]
 
+NUM_EPOCHS = {'cone': 50, 'red_line': 50, 'gate': 100}
 SUBMIT = True
 RM_EXIST = True
 
@@ -74,7 +74,7 @@ def create_condor_job_file(trgt, config, lrate):
         jobfile.write(
             f"arguments = {PROJECT_PATH}/run.py --config_file {PROJECT_PATH}/{config} "
             f"--learning_rate {lrate} --target {trgt} "
-            f"--output_dir {output_dir}\n"
+            f"--output_dir {output_dir} --number_of_epochs {NUM_EPOCHS[trgt]}\n"
         )
 
         for key, value in SPECS.items():
@@ -88,17 +88,17 @@ def create_condor_job_file(trgt, config, lrate):
     return os.path.join(output_dir, "condor.job")
 
 
-# for conf in RED_LINE_CONFIGS:
-#     filename = create_condor_job_file("red_line", conf, 0.0001)
-#     subprocess.call(shlex.split(f"condor_submit {filename}"))
+for conf in RED_LINE_CONFIGS:
+    filename = create_condor_job_file("red_line", conf, 0.0001)
+    subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 # for conf in GATE_CONFIGS:
 #     filename = create_condor_job_file("gate", conf, 0.0001)
 #     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
-for conf in CONE_CONFIGS:
-    filename = create_condor_job_file("cone", conf, 0.001)
-    subprocess.call(shlex.split(f"condor_submit {filename}"))
+# for conf in CONE_CONFIGS:
+#     filename = create_condor_job_file("cone", conf, 0.001)
+#     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 
 print("finished")

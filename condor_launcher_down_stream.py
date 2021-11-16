@@ -22,15 +22,14 @@ SPECS = {
 }
 
 # RED_LINE
-TARGET = "red_line"
-CONFIG = "???"
+# TARGET = "red_line"
+# CONFIG = "???"
 
 # GATE
 # TARGET = 'gate'
-# CONFIG = '???'
+# CONFIG = 'good_gate_model'
 
 ENCODER = f"data/{TARGET}/{CONFIG}"
-TEXTURE_DIR = "data/datasets/dtd_and_places"
 TASKS = ["waypoints", "velocities"]
 LEARNING_RATE = 0.00001
 SUBMIT = True
@@ -49,7 +48,7 @@ def create_condor_job_file(trgt, task, lrate):
             f"arguments = {PROJECT_PATH}/run.py --config_file "
             f"{PROJECT_PATH}/configs/{CONFIG}.json "
             f"--learning_rate {lrate} --target {trgt} "
-            f"--output_dir {output_dir} --texture_directory {TEXTURE_DIR[trgt]} "
+            f"--output_dir {output_dir} "
             f"--encoder_ckpt_dir {ENCODER} "
             f"--task {task} --number_of_epochs {NUMEPOCH} \n"
         )
