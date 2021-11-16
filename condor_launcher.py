@@ -33,13 +33,9 @@ SPECS = {
 CONE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        # "deep_supervision_reference",
-        # "deep_supervision_reference",
-        # "deep_supervision_reference_bn",
-        # "default",
-        # "default_fg_bn",
+        "deep_supervision_reference_bn",
+        "default_fg_bn",
         "default_bn",
-        # "deep_supervision_only_brightness",
     ]
 ]
 
@@ -101,7 +97,7 @@ def create_condor_job_file(trgt, config, lrate):
 #     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 for conf in CONE_CONFIGS:
-    filename = create_condor_job_file("cone", conf, 0.00001)
+    filename = create_condor_job_file("cone", conf, 0.001)
     subprocess.call(shlex.split(f"condor_submit {filename}"))
 
 
