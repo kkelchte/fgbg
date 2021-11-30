@@ -22,12 +22,12 @@ SPECS = {
 }
 
 # RED_LINE
-# TARGET = "red_line"
-# CONFIG = "???"
+TARGET = "red_line"
+CONFIG = "deep_supervision_only_brightness"
 
 # GATE
 # TARGET = 'gate'
-# CONFIG = 'good_gate_model'
+# CONFIG = 'deep_supervision_comb_blur_brightness_hue_bn'
 
 ENCODER = f"data/{TARGET}/{CONFIG}"
 TASKS = ["waypoints", "velocities"]

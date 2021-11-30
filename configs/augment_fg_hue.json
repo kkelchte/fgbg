@@ -7,14 +7,19 @@
     "architecture": "deepsupervision",
     "training_directory": "data/datasets/gate_cone_line",
     "ood_directory": "data/datasets/out_of_distribution",
-    "texture_directory": "",
+    "texture_directory": "data/datasets/dtd_and_places",
     "fg_augmentation": {
         "fg_color": {},
-        "fg_blur": {}
+        "fg_blur": {
+            "brightness": 0,
+            "hue": 0.5,
+            "saturation": 0,
+            "contrast": 0
+        }
     },
     "combined_blur": {},
     "augment": 1,
-    "triplet": 0.5,
+    "triplet": 0,
     "deep_supervision": 0,
     "batch_normalisation": 0,
     "end_to_end": 0

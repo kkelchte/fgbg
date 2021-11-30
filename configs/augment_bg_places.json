@@ -8,7 +8,10 @@
     "training_directory": "data/datasets/gate_cone_line",
     "ood_directory": "data/datasets/out_of_distribution",
     "texture_directory": "data/datasets/places",
-    "fg_augmentation": {},
+    "fg_augmentation": {
+        "fg_color": {},
+        "fg_blur": {}
+    },
     "combined_blur": {},
     "augment": 1,
     "triplet": 0,
