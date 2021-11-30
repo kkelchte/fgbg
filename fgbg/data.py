@@ -5,11 +5,9 @@ from PIL import Image
 import json
 import h5py
 import numpy as np
-from numpy.lib.type_check import _nan_to_num_dispatcher
 import torch
 from torch.utils.data import Dataset as TorchDataset
 import torchvision.transforms as T
-from torchvision.transforms.transforms import GaussianBlur
 
 
 class CleanDataset(TorchDataset):
@@ -49,7 +47,7 @@ class CleanDataset(TorchDataset):
                         contrast=fg_augmentation["fg_color"]["hue"],
                     )
                 )
-            if fg_augmentation["fg_blur"]  != {}:
+            if fg_augmentation["fg_blur"] != {}:
                 augmentation_transforms.append(
                     T.GaussianBlur(
                         kernel_size=fg_augmentation["fg_blur"]["kernel"],
@@ -206,7 +204,7 @@ class ImagesDataset(TorchDataset):
         self.images = [
             os.path.join(dir_name, f)
             for f in os.listdir(dir_name)
-            if f.endswith(".png") and target in f
+            if (f.endswith(".png") or f.endswith(".jpg")) and target in f
         ]
         self.input_size = input_size
         self.output_size = output_size
@@ -220,6 +218,36 @@ class ImagesDataset(TorchDataset):
         image = np.array(image.resize(self.input_size[1:]), dtype=np.float32)
         image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
         return {"observation": image}
+
+
+class LabelledImagesDataset(ImagesDataset):
+    def __init__(
+        self,
+        img_dir_name: str,
+        target: str,
+        mask_dir_name: str,
+        input_size: tuple = (3, 200, 200),
+        output_size: tuple = (200, 200),
+    ) -> None:
+        super().__init__(
+            dir_name=img_dir_name,
+            target=target,
+            input_size=input_size,
+            output_size=output_size,
+        )
+        self.mask_dir_name = mask_dir_name
+
+    def __getitem__(self, index):
+        data = super().__getitem__(index)
+        # get mask
+        mask_file = os.path.join(
+            self.mask_dir_name,
+            os.path.basename(self.images[index]).replace("jpg", "npy"),
+        )
+        mask = np.load(mask_file)
+        mask = torch.from_numpy(mask // 255).float()
+        data["mask"] = mask
+        return data
 
 
 class ImageSequenceDataset(TorchDataset):

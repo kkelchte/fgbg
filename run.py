@@ -1,4 +1,4 @@
-import os, sys
+import os
 from argparse import ArgumentParser
 import shutil
 
@@ -18,9 +18,7 @@ parser.add_argument("--output_dir", type=str)
 parser.add_argument("--target", type=str)
 parser.add_argument("--encoder_ckpt_dir", type=str)
 parser.add_argument("--number_of_epochs", type=int)
-parser.add_argument(
-    "--end_to_end", dest="end_to_end", action="store_true"
-)
+parser.add_argument("--end_to_end", dest="end_to_end", action="store_true")
 parser.add_argument("--evaluate", dest="evaluate", action="store_true")
 parser.add_argument("--rm", dest="rm", action="store_true")
 config = vars(parser.parse_args())
@@ -146,47 +144,17 @@ if __name__ == "__main__":
         print(f"{fgbg.get_date_time_tag()} - Evaluate on validation images")
         fgbg.evaluate_qualitatively_on_dataset("validation", val_set, model, tb_writer)
 
-        print(f"{fgbg.get_date_time_tag()} - Evaluate on real image")
-        try:
-            real_dataset = fgbg.ImagesDataset(
-                target=target,
-                dir_name=config["real_directory"],
-                input_size=model.input_size,
-                output_size=model.output_size,
-            )
-            fgbg.evaluate_qualitatively_on_dataset("real", real_dataset, model, tb_writer)
-        except:
-            print(f"failed to evaluate on {config['real_directory']}")
-        print(f"{fgbg.get_date_time_tag()} - Evaluate on real image sequence")
-        try:
-            real_dataset = fgbg.ImageSequenceDataset(
-                hdf5_file=os.path.join(
-                    config["real_sequence_directory"], target, "pruned_data.hdf5"
-                ),
-                input_size=model.input_size,
-                output_size=model.output_size,
-            )
-            fgbg.evaluate_qualitatively_on_sequences(
-                "eval_real_sequence", real_dataset, model, output_directory
-            )
-        except:
-            print(f"failed to evaluate on {config['real_sequence_directory']}")
-
-    if config["ood_directory"] != "":
         print(f"{fgbg.get_date_time_tag()} - Evaluate on out-of-distribution images")
-        ood_dataset = fgbg.CleanDataset(
-            hdf5_file=os.path.join(config["ood_directory"], target, "data.hdf5"),
-            json_file=os.path.join(config["ood_directory"], target, "data.json"),
-            fg_augmentation={},
-            input_size=model.input_size,
-            output_size=model.output_size,
+        ood_set = fgbg.LabelledImagesDataset(
+            img_dir_name=config["ood_directory"] + "/input",
+            target=target,
+            mask_dir_name=config["ood_directory"] + "/mask",
         )
-        if config["task"] == "pretrain":
-            fgbg.evaluate_qualitatively_on_dataset(
-                "out-of-distribution", ood_dataset, model, tb_writer
-            )
+        fgbg.evaluate_qualitatively_on_dataset(
+            "out-of-distribution", ood_set, model, tb_writer
+        )
         fgbg.evaluate_quantitatively_on_dataset(
-            "out-of-distribution", ood_dataset, model, tb_writer, config["task"]
+            "out-of-distribution", ood_set, model, tb_writer, config["task"]
         )
 
     print(f"{fgbg.get_date_time_tag()} - Finished")
