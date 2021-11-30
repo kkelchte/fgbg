@@ -181,10 +181,6 @@ class DeepSupervisionNet(nn.Module):
             + self.weight_4 * self.upsample_4(results["out4"])
         )
         results["final_prob"] = self.sigmoid(final_logit).squeeze(dim=1)
-
-        projection = self.projection_1(results["x4"])
-        projection = self.projection_2(projection)
-        results["projection"] = self.avg_pool(projection)
         return results
 
     def forward(self, inputs, intermediate_outputs: bool = False) -> torch.Tensor:
@@ -200,8 +196,16 @@ class DeepSupervisionNet(nn.Module):
         else:
             return results["prob4" if self.no_deep_supervision else "final_prob"]
 
-    def project(self, inputs) -> torch.Tensor:
-        results = self.forward_with_intermediate_outputs(inputs)
+    def project(self, inputs, frozen: bool = False) -> torch.Tensor:
+        if frozen:
+            with torch.no_grad():
+                results = self.forward_with_intermediate_outputs(inputs)
+        else:
+            results = self.forward_with_intermediate_outputs(inputs)
+        projection = self.projection_1(results["x4"])
+        projection = self.projection_2(projection)
+        results["projection"] = self.avg_pool(projection)
+
         return results["projection"]
 
 
@@ -240,9 +244,9 @@ class DownstreamNet(nn.Module):
             print(f"Loaded encoder from {encoder_ckpt_dir}.")
 
     def forward(self, inputs) -> torch.Tensor:
-        if not self.end_to_end:
-            with torch.no_grad():
-                features = self.encoder.project(inputs).squeeze(-1).squeeze(-1)
-        else:
-            features = self.encoder.project(inputs).squeeze(-1).squeeze(-1)
+        features = (
+            self.encoder.project(inputs, frozen=not self.end_to_end)
+            .squeeze(-1)
+            .squeeze(-1)
+        )
         return self.decoder(features)
