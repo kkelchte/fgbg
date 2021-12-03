@@ -9,8 +9,8 @@
     "ood_directory": "data/datasets/out_of_distribution",
     "texture_directory": "data/datasets/dtd",
     "fg_augmentation": {
-        "fg_color": {},
-        "fg_blur": {
+        "fg_blur": {},
+        "fg_color": {
             "brightness": 0,
             "hue": 0,
             "saturation": 0,

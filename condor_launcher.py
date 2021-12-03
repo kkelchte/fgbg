@@ -33,10 +33,10 @@ SPECS = {
 LINE_CONFIGS = [
     f"configs/{cf}.json"
     for cf in [
-        "vanilla",
-        "augment_bg_dtd",
-        "augment_bg_places",
-        "augment_bg_dtd_and_places",
+        # "vanilla",
+        # "augment_bg_dtd",
+        # "augment_bg_places",
+        # "augment_bg_dtd_and_places",
         "augment_fg_brightness",
         "augment_fg_contrast",
         "augment_fg_hue",
