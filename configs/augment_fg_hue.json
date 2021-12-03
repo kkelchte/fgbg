@@ -7,7 +7,7 @@
     "architecture": "deepsupervision",
     "training_directory": "data/datasets/gate_cone_line",
     "ood_directory": "data/datasets/out_of_distribution",
-    "texture_directory": "data/datasets/dtd",
+    "texture_directory": "data/datasets/places",
     "fg_augmentation": {
         "fg_blur": {},
         "fg_color": {
