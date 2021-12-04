@@ -37,10 +37,12 @@ LINE_CONFIGS = [
         # "augment_bg_dtd",
         # "augment_bg_places",
         # "augment_bg_dtd_and_places",
-        "augment_fg_brightness",
-        "augment_fg_contrast",
-        "augment_fg_hue",
-        "augment_fg_saturation",
+        # "augment_fg_brightness",
+        # "augment_fg_contrast",
+        # "augment_fg_hue",
+        # "augment_fg_saturation",
+        "deep_supervision",
+        "deep_supervision_triplet"
     ]
 ]
 
