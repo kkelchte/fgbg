@@ -21,20 +21,22 @@ SPECS = {
     "+RequestWalltime": int(50 * 3 * 60),
 }
 
-# RED_LINE
-TARGET = "red_line"
-CONFIG = "deep_supervision_only_brightness"
+# LINE
+TARGET = "line"
+# CONFIG = "deep_supervision"
+# CONFIG = "augment_fg_brightness"
+CONFIG = "augment_bg_places"
 
 # GATE
 # TARGET = 'gate'
 # CONFIG = 'deep_supervision_comb_blur_brightness_hue_bn'
 
 ENCODER = f"data/{TARGET}/{CONFIG}"
-TASKS = ["waypoints", "velocities"]
-LEARNING_RATE = 0.00001
+TASKS = ["waypoints"] #, "velocities"]
+LEARNING_RATE = 0.0001
 SUBMIT = True
 RM_EXIST = True
-NUMEPOCH = 50
+NUMEPOCH = 100
 
 
 def create_condor_job_file(trgt, task, lrate):
