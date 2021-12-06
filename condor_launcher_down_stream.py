@@ -23,9 +23,9 @@ SPECS = {
 
 # LINE
 TARGET = "line"
-# CONFIG = "deep_supervision"
+CONFIG = "deep_supervision_triplet"
 # CONFIG = "augment_fg_brightness"
-CONFIG = "augment_bg_places"
+# CONFIG = "augment_bg_places"
 
 # GATE
 # TARGET = 'gate'

@@ -41,8 +41,10 @@ LINE_CONFIGS = [
         # "augment_fg_contrast",
         # "augment_fg_hue",
         # "augment_fg_saturation",
-        "deep_supervision",
-        "deep_supervision_triplet"
+        "augment_fg_blur",
+        "augment_fg_blur_and_brightness",
+        # "deep_supervision",
+        # "deep_supervision_triplet"
     ]
 ]
 
