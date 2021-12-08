@@ -32,7 +32,7 @@ CONFIG = "deep_supervision_triplet"
 # CONFIG = 'deep_supervision_comb_blur_brightness_hue_bn'
 
 ENCODER = f"data/{TARGET}/{CONFIG}"
-TASKS = ["waypoints"] #, "velocities"]
+TASKS = ["velocities"] #, "waypoints"]
 LEARNING_RATE = 0.0001
 SUBMIT = True
 RM_EXIST = True
