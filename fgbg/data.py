@@ -158,8 +158,7 @@ class AugmentedTripletDataset(CleanDataset):
         result = super().__getitem__(index)
 
         foreground = result["observation"]
-        # background_img = self.load_from_file(np.random.choice(self._background_images))
-        background_img = self.load_from_file(self._background_images[0])
+        background_img = self.load_from_file(np.random.choice(self._background_images))
         result["reference"] = self.combine_fg_bg(
             result["mask"], foreground, background_img
         )
