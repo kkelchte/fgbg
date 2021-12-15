@@ -15,7 +15,7 @@ class CleanDataset(TorchDataset):
         self,
         hdf5_file: str,
         json_file: str,
-        fg_augmentation: dict = {},
+        fg_augmentation: dict = None,
         input_size: tuple = (3, 200, 200),
         output_size: tuple = (200, 200),
     ):
@@ -158,7 +158,8 @@ class AugmentedTripletDataset(CleanDataset):
         result = super().__getitem__(index)
 
         foreground = result["observation"]
-        background_img = self.load_from_file(np.random.choice(self._background_images))
+        # background_img = self.load_from_file(np.random.choice(self._background_images))
+        background_img = self.load_from_file(self._background_images[0])
         result["reference"] = self.combine_fg_bg(
             result["mask"], foreground, background_img
         )
