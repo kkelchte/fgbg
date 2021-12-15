@@ -60,7 +60,7 @@ def plot(img):
 
 
 def plot_data_item(data_item):
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    _, axes = plt.subplots(1, 3, figsize=(15, 5))
     axes[0].imshow(data_item["reference"].permute(1, 2, 0))
     axes[0].set_title("reference")
     axes[0].axis("off")
