@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 
+import torch
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ def create_trajectory_gif(filename: str, data: list):
     imageio.mimsave(filename, data)
 
 
-def get_IoU(predictions, labels):
+def get_IoU(predictions: torch.Tensor, labels: torch.Tensor, threshold: float = 0.5):
     """Code inspired by
     https://www.kaggle.com/iezepov/fast-iou-scoring-metric-in-pytorch-and-numpy
     """
@@ -21,7 +22,7 @@ def get_IoU(predictions, labels):
         predictions.unsqueeze_(0)
     if len(labels.shape) != 3:
         labels.unsqueeze_(0)
-    outputs = predictions.round().int()
+    outputs = (predictions > threshold).int()
     labels = labels.int()
     # Will be zero if Truth=0 or Prediction=0
     intersection = (outputs & labels).float().sum((1, 2))
