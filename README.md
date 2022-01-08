@@ -1,6 +1,8 @@
 # RARA: Zero-shot Sim2Real Visual Navigation with Following Foreground Cues
 
 FGBG (foreground-background) pytorch package for defining and training models.
+For a demo, please watch: https://youtu.be/nnnhLXBl8J8
+
 
 ## Install Imitation-learning codebase for data collection and evaluation in simulation
 See instruction here: https://github.com/kkelchte/imitation-learning-codebase.
